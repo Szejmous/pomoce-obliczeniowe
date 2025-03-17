@@ -4,51 +4,44 @@
     background: white;
     padding: 20px;
     border-radius: 8px;
+    position: relative;
 }
-.input-section {
-    margin-bottom: 20px;
-}
-.input-section label {
-    display: block;
-    margin: 5px 0;
-}
-.input-section input, .input-section select {
-    width: 100%;
-    max-width: 300px;
-    padding: 5px;
-}
-.results-section {
-    margin-top: 20px;
-}
-.charts {
+.content {
     display: flex;
-    flex-direction: column;
     gap: 20px;
 }
-.chart-container {
-    width: 100%;
-    max-width: 900px; /* Poszerzone okno wizualizacji */
-    margin: 0 auto;
+.input-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
-.chart-container canvas {
-    width: 100% !important;
-    height: auto !important;
+canvas {
+    border: 1px solid #ccc;
 }
-button {
-    padding: 5px 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
+.plots {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
 }
-button:hover {
-    background-color: #0056b3;
+#ugieciePlot, #momentPlot {
+    width: 50%;
+    height: 400px;
 }
 .back-btn {
     display: inline-block;
     margin-bottom: 20px;
     color: #007bff;
     text-decoration: none;
+}
+button {
+    padding: 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
 }
