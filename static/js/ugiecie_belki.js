@@ -17,7 +17,8 @@ function updateVisualization() {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const belka_x_start = 50, belka_x_end = 350, belka_y = 200;
+    // Zwiększamy szerokość kanwy i dostosowujemy położenie
+    const belka_x_start = 50, belka_x_end = 600, belka_y = 200;
     const belka_length_px = belka_x_end - belka_x_start;
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -95,6 +96,30 @@ function updateVisualization() {
     }
 
     ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30);
+
+    // Linie wymiarowe pod kanwą
+    const dimensionY1 = belka_y + 50; // Pierwsza linia wymiarowa
+    const dimensionY2 = belka_y + 70; // Druga linia wymiarowa
+
+    // Linia wymiarowa dla całkowitej długości belki
+    ctx.beginPath();
+    ctx.moveTo(belka_x_start, dimensionY1);
+    ctx.lineTo(belka_x_end, dimensionY1);
+    ctx.stroke();
+    ctx.fillText(`${L.toFixed(1)} m`, (belka_x_start + belka_x_end) / 2, dimensionY1 + 20);
+
+    // Linia wymiarowa dla pozycji siły P
+    if (P > 0 && L > 0 && a <= L) {
+        const a_pos = belka_x_start + (a / L) * belka_length_px;
+        const remaining = L - a;
+        ctx.beginPath();
+        ctx.moveTo(belka_x_start, dimensionY2);
+        ctx.lineTo(belka_x_end, dimensionY2);
+        ctx.stroke();
+        ctx.fillText(`${a.toFixed(1)} m`, belka_x_start + (a_pos - belka_x_start) / 2, dimensionY2 + 20);
+        ctx.fillText(`${remaining.toFixed(1)} m`, a_pos + (belka_x_end - a_pos) / 2, dimensionY2 + 20);
+        ctx.fillText(`${L.toFixed(1)} m`, (belka_x_start + belka_x_end) / 2, dimensionY2 + 40);
+    }
 }
 
 async function calculateBeam() {
@@ -122,10 +147,7 @@ async function calculateBeam() {
     document.getElementById("dopuszczalne").innerText = `Dopuszczalne ugięcie: ${Math.round(result.v_dop)} mm (${data.warunek})`;
     document.getElementById("moment").innerText = `Maksymalny moment: ${result.M_max.toFixed(2)} kNm`;
     document.getElementById("wytezenie").innerText = `Wytężenie przekroju: ${result.wytężenie.toFixed(2)}%`;
-    document.getElementById("optymalny").innerText = `Najlepszy profil: ${result.najlepszy || "-"}`;
-    document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: ${result.przekroczony || "-"}`;
 
-    // Wykres ugięcia z wartością maksymalną
     Plotly.newPlot("ugieciePlot", [{
         x: result.x_vals,
         y: result.v_vals,
@@ -143,21 +165,9 @@ async function calculateBeam() {
     }], {
         title: "Wykres ugięcia",
         xaxis: { title: "Położenie x [m]" },
-        yaxis: { title: "Ugięcie [mm]" },
-        annotations: [{
-            x: result.x_vals[v_vals.indexOf(Math.min(...result.v_vals))],
-            y: Math.min(...result.v_vals),
-            xref: "x",
-            yref: "y",
-            text: `Max: ${Math.round(Math.abs(Math.min(...result.v_vals)))} mm`,
-            showarrow: true,
-            arrowhead: 2,
-            ax: 20,
-            ay: -30
-        }]
+        yaxis: { title: "Ugięcie [mm]" }
     });
 
-    // Wykres momentu z wartością maksymalną
     Plotly.newPlot("momentPlot", [{
         x: result.x_vals,
         y: result.m_vals,
@@ -168,42 +178,6 @@ async function calculateBeam() {
     }], {
         title: "Wykres momentów zginających",
         xaxis: { title: "Położenie x [m]" },
-        yaxis: { title: "Moment [kNm]" },
-        annotations: [{
-            x: result.x_vals[result.m_vals.indexOf(Math.min(...result.m_vals))],
-            y: Math.min(...result.m_vals),
-            xref: "x",
-            yref: "y",
-            text: `Max: ${Math.abs(Math.min(...result.m_vals)).toFixed(2)} kNm`,
-            showarrow: true,
-            arrowhead: 2,
-            ax: 20,
-            ay: -30
-        }]
+        yaxis: { title: "Moment [kNm]" }
     });
-
-    // Linie wymiarowe pod kanwą
-    const canvas = document.getElementById("beamCanvas");
-    const ctx = canvas.getContext("2d");
-    const dimensionY = 300;
-
-    // Linia dla siły P
-    if (P > 0 && data.L > 0 && data.a <= data.L) {
-        ctx.beginPath();
-        ctx.moveTo(50, dimensionY);
-        ctx.lineTo(350, dimensionY);
-        ctx.stroke();
-        const a_pos = 50 + (data.a / data.L) * 300;
-        ctx.fillText(`P=${data.P} kN`, a_pos - 20, dimensionY - 10);
-        ctx.fillText(`${data.a.toFixed(1)} m`, 50, dimensionY + 20);
-        ctx.fillText(`${(data.L - data.a).toFixed(1)} m`, a_pos, dimensionY + 20);
-        ctx.fillText(`${data.L.toFixed(1)} m`, 350, dimensionY + 20);
-    }
-
-    // Linia dla całkowitej długości belki
-    ctx.beginPath();
-    ctx.moveTo(50, dimensionY + 30);
-    ctx.lineTo(350, dimensionY + 30);
-    ctx.stroke();
-    ctx.fillText(`${data.L.toFixed(1)} m`, 200, dimensionY + 50);
 }
