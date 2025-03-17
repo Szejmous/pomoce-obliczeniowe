@@ -47,10 +47,7 @@ async def calculate_beam(data: BeamInput):
     except KeyError:
         raise HTTPException(status_code=400, detail="Nieprawidłowy przekrój")
 
-    x_vals = np.linspace(0, L, 201).tolist()
-    v_vals = [oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I, data.tryb) * 1000 for x in x_vals]
-    m_vals = [oblicz_moment_w_punkcie(x, L, q, P, a, data.tryb) for x in x_vals]
-
+    # Definicje funkcji PRZED ich użyciem
     def oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I, tryb):
         v_q = v_P = 0
         if tryb == "wolna":
@@ -77,6 +74,11 @@ async def calculate_beam(data: BeamInput):
             M_q = q * (L - x)**2 / 2 if q != 0 else 0
             M_P = P * (a - x) if P != 0 and x <= a <= L else 0
             return -(M_q + M_P) / 1000
+
+    # Teraz użycie funkcji
+    x_vals = np.linspace(0, L, 201).tolist()
+    v_vals = [oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I, data.tryb) * 1000 for x in x_vals]
+    m_vals = [oblicz_moment_w_punkcie(x, L, q, P, a, data.tryb) for x in x_vals]
 
     V_max = min(v_vals)
     M_max = abs(min(m_vals))
