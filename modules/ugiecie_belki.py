@@ -75,7 +75,7 @@ async def calculate_beam(data: BeamInput):
             M_P = P * (a - x) if P != 0 and x <= a <= L else 0
             return -(M_q + M_P) / 1000
 
-    # Teraz użycie funkcji
+    # Obliczenia ugięcia i momentu
     x_vals = np.linspace(0, L, 201).tolist()
     v_vals = [oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I, data.tryb) * 1000 for x in x_vals]
     m_vals = [oblicz_moment_w_punkcie(x, L, q, P, a, data.tryb) for x in x_vals]
@@ -89,6 +89,33 @@ async def calculate_beam(data: BeamInput):
     sigma_max = M_max * 1e3 / W / 1e6
     wytężenie = (sigma_max / sigma_dop) * 100
 
+    # Obliczanie najlepszego i pierwszego przekroczonego profilu
+    def find_best_profile(profiles, V_max, v_dop, os, L, q, P, a, E, tryb):
+        profiles_with_ugiecie = []
+        for nazwa, dane in profiles.items():
+            I_profile = dane[os] * 1e-8
+            dim_profile = dane["h" if os == "Iy" else "b"] / 1000
+            v_vals_profile = [oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I_profile, tryb) * 1000 for x in x_vals]
+            V_max_profile = min(v_vals_profile)
+            profiles_with_ugiecie.append({"nazwa": nazwa, "V_max": V_max_profile})
+
+        # Sortuj według ugięcia (od najmniejszego do największego, czyli od największego V_max do najmniejszego)
+        profiles_with_ugiecie.sort(key=lambda x: x["V_max"], reverse=True)
+
+        najlepszy = None
+        przekroczony = None
+        for profile in profiles_with_ugiecie:
+            if not najlepszy and abs(profile["V_max"]) <= v_dop:
+                najlepszy = profile["nazwa"]
+            if not przekroczony and abs(profile["V_max"]) > v_dop:
+                przekroczony = profile["nazwa"]
+            if najlepszy and przekroczony:
+                break
+
+        return {"najlepszy": najlepszy, "przekroczony": przekroczony}
+
+    profile_result = find_best_profile(przekroje[data.kategoria], V_max, v_dop, data.os, L, q, P, a, E, data.tryb)
+
     return {
         "v_vals": v_vals,
         "m_vals": m_vals,
@@ -97,5 +124,7 @@ async def calculate_beam(data: BeamInput):
         "M_max": M_max,
         "v_dop": v_dop,
         "wytężenie": wytężenie,
-        "profile": {k: v for k, v in przekroje[data.kategoria].items()}
+        "profile": {k: v for k, v in przekroje[data.kategoria].items()},
+        "najlepszy": profile_result["najlepszy"],
+        "przekroczony": profile_result["przekroczony"]
     }
