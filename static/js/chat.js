@@ -20,7 +20,7 @@ function startChat() {
 }
 
 function initializeWebSocket(name, color) {
-    ws = new WebSocket(`ws://${window.location.host}/chat/ws`);
+    ws = new WebSocket(`wss://${window.location.host}/chat/ws`); // Zmieniono na wss://
 
     ws.onopen = () => {
         // Wyślij nazwę i kolor po połączeniu
@@ -54,8 +54,12 @@ function initializeWebSocket(name, color) {
 }
 
 function sendMessage() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) { // Zabezpieczenie przed undefined
+        alert("Połączenie z chatem nie jest aktywne. Spróbuj odświeżyć stronę.");
+        return;
+    }
     const msg = document.getElementById("message").value.trim();
-    if (msg && ws.readyState === WebSocket.OPEN) {
+    if (msg) {
         ws.send(JSON.stringify({ message: msg }));
         document.getElementById("message").value = "";
     }
@@ -63,18 +67,20 @@ function sendMessage() {
 
 // Obsługa wklejania obrazu ze schowka
 document.addEventListener("paste", (event) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-        for (let item of items) {
-            if (item.type.indexOf("image") !== -1) {
-                const blob = item.getAsFile();
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const base64Image = e.target.result.split(",")[1];
-                    ws.send(JSON.stringify({ image: base64Image }));
-                };
-                reader.readAsDataURL(blob);
-            }
+    if (!ws || ws.readyState !== WebSocket.OPEN) { // Zabezpieczenie przed undefined
+        alert("Połączenie z chatem nie jest aktywne. Spróbuj odświeżyć stronę.");
+        return;
+    }
+    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    for (let item of items) {
+        if (item.type.indexOf("image") !== -1) {
+            const blob = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64Image = e.target.result.split(",")[1];
+                ws.send(JSON.stringify({ image: base64Image }));
+            };
+            reader.readAsDataURL(blob);
         }
     }
 });
