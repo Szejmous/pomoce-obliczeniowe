@@ -1,0 +1,47 @@
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+}
+.content {
+    display: flex;
+    gap: 20px;
+}
+.input-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+canvas {
+    border: 1px solid #ccc;
+}
+.plots {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+#ugieciePlot, #momentPlot {
+    width: 50%;
+    height: 400px;
+}
+.back-btn {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #007bff;
+    text-decoration: none;
+}
+button {
+    padding: 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
+}
