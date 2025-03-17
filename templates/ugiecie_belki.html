@@ -2,81 +2,73 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Ugięcie Belki</title>
+    <title>Ugięcie belki</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/ugiecie_belki.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <script src="/static/js/ugiecie_belki.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Obliczanie ugięcia belki</h1>
+        <h1>Ugięcie belki</h1>
         <a href="/" class="back-btn">Powrót do menu</a>
-        <div class="content">
-            <div class="input-section">
-                <label><input type="radio" name="tryb" value="wolna" checked onclick="updateVisualization()"> Belka swobodnie podparta</label>
-                <label><input type="radio" name="tryb" value="wspornik" onclick="updateVisualization()"> Wspornik</label>
-                
-                <label>Długość belki L [m]:</label>
-                <input type="number" id="L" value="2" oninput="updateVisualization()">
-                
-                <label>Obciążenie równomierne q [kN/m]:</label>
-                <input type="number" id="q" value="5" oninput="updateVisualization()">
-                
-                <label>Siła skupiona P [kN]:</label>
-                <input type="number" id="P" value="100" oninput="updateVisualization()">
-                
-                <label>Położenie siły a [m]:</label>
-                <input type="number" id="a" value="0.5" oninput="updateVisualization()">
-                
-                <label>Moduł Younga E [GPa]:</label>
-                <input type="number" id="E" value="210">
-                
-                <label>Kategoria przekroju:</label>
-                <select id="kategoria" onchange="updateRozmiary()">
-                    {% for kategoria in kategorie %}
-                        <option value="{{ kategoria }}" {% if kategoria == "IPE" %}selected{% endif %}>{{ kategoria }}</option>
-                    {% endfor %}
-                </select>
-                
-                <label>Rozmiar przekroju:</label>
-                <select id="rozmiar" onchange="updateVisualization()"></select>
-                
-                <label>Oś ugięcia:</label>
-                <label><input type="radio" name="os" value="Iy" checked> Oś Y (Iy)</label>
-                <label><input type="radio" name="os" value="Iz"> Oś Z (Iz)</label>
-                
-                <label>Warunek ugięcia:</label>
-                <select id="warunek">
-                    {% for warunek in warunki_ugiecia %}
-                        <option value="{{ warunek }}" {% if warunek == "L/250" %}selected{% endif %}>{{ warunek }}</option>
-                    {% endfor %}
-                </select>
-                
-                <button onclick="calculateBeam()">Oblicz ugięcie</button>
-                
-                <div id="results">
-                    <p id="rzeczywiste">Rzeczywiste ugięcie: -</p>
-                    <p id="dopuszczalne">Dopuszczalne ugięcie: -</p>
-                    <p id="moment">Maksymalny moment: -</p>
-                    <p id="wytezenie">Wytężenie przekroju: -</p>
-                    <p id="optymalny">Najlepszy profil: -</p>
-                    <p id="przekroczony">Pierwszy przekroczony: -</p>
+        <div class="input-section">
+            <label for="L">Długość belki L [m]:</label>
+            <input type="number" step="0.1" id="L" value="5">
+            <label for="q">Obciążenie równomierne q [kN/m]:</label>
+            <input type="number" step="0.1" id="q" value="0">
+            <label for="P">Siła skupiona P [kN]:</label>
+            <input type="number" step="0.1" id="P" value="0">
+            <label for="a">Położenie siły a [m]:</label>
+            <input type="number" step="0.1" id="a" value="0">
+            <label for="E">Moduł Younga E [GPa]:</label>
+            <input type="number" step="0.1" id="E" value="210">
+            <label for="kategoria">Kategoria przekroju:</label>
+            <select id="kategoria" onchange="updateRozmiary()">
+                {% for kategoria in kategorie %}
+                    <option value="{{ kategoria }}">{{ kategoria }}</option>
+                {% endfor %}
+            </select>
+            <label for="rozmiar">Rozmiar przekroju:</label>
+            <select id="rozmiar"></select>
+            <label for="os">Oś ugięcia:</label>
+            <select id="os">
+                <option value="Iy">Iy</option>
+                <option value="Iz">Iz</option>
+            </select>
+            <label for="warunek">Warunek ugięcia:</label>
+            <select id="warunek">
+                {% for warunek in warunki_ugiecia %}
+                    <option value="{{ warunek }}">{{ warunek }}</option>
+                {% endfor %}
+            </select>
+            <label for="tryb">Tryb podparcia:</label>
+            <select id="tryb">
+                <option value="wolna">Wolna</option>
+                <option value="utwierdzona">Utwierdzona</option>
+            </select>
+            <button onclick="calculate()">Oblicz ugięcie</button>
+        </div>
+        <div class="results-section">
+            <h2>Wyniki</h2>
+            <div class="charts">
+                <div class="chart-container">
+                    <h3>Ugięcie belki [mm]</h3>
+                    <canvas id="ugiecieChart" width="800" height="300"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Moment zginający [kNm]</h3>
+                    <canvas id="momentChart" width="800" height="300"></canvas>
                 </div>
             </div>
-            <canvas id="beamCanvas" width="400" height="400"></canvas>
-        </div>
-        <div class="plots">
-            <div id="ugieciePlot"></div>
-            <div id="momentPlot"></div>
+            <p><strong>Maksymalne ugięcie:</strong> <span id="v-max">-</span> mm</p>
+            <p><strong>Dopuszczalne ugięcie:</strong> <span id="v-dop">-</span> mm</p>
+            <p><strong>Maksymalny moment:</strong> <span id="m-max">-</span> kNm</p>
+            <p><strong>Wytężenie:</strong> <span id="wytrzymalosc">-</span>%</p>
+            <p><strong>Najlepszy profil:</strong> <span id="najlepszy">-</span></p>
+            <p><strong>Pierwszy przekroczony:</strong> <span id="przekroczony">-</span></p>
         </div>
     </div>
-    <script>
-        const przekroje = {{ przekroje | tojson }};
-        window.onload = () => {
-            updateRozmiary();
-            updateVisualization();
-        };
-    </script>
 </body>
 </html>
