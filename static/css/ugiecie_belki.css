@@ -11,14 +11,15 @@
     gap: 20px;
 }
 .input-section {
-    flex: 1;
+    flex: 0 0 40%; /* Zmniejszamy szerokość sekcji inputów do 40% */
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 canvas {
     border: 1px solid #ccc;
-    margin-bottom: 60px; /* Dodano miejsce na linie wymiarowe */
+    width: 600px; /* Dopasuj szerokość kanwy do nowej wartości w JS */
+    height: 400px;
 }
 .plots {
     display: flex;
