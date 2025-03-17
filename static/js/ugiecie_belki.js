@@ -1,158 +1,168 @@
+let ugiecieChart, momentChart;
+
+document.addEventListener("DOMContentLoaded", () => {
+    updateRozmiary();
+});
+
 function updateRozmiary() {
     const kategoria = document.getElementById("kategoria").value;
     const rozmiarSelect = document.getElementById("rozmiar");
     rozmiarSelect.innerHTML = "";
-    Object.keys(przekroje[kategoria]).forEach(rozmiar => {
+    const przekroje = {{ przekroje | tojson }};
+    const rozmiary = Object.keys(przekroje[kategoria]);
+    rozmiary.forEach(rozmiar => {
         const option = document.createElement("option");
         option.value = rozmiar;
-        option.text = rozmiar;
-        if (rozmiar === "IPE 200") option.selected = true;
+        option.textContent = rozmiar;
         rozmiarSelect.appendChild(option);
     });
-    updateVisualization();
 }
 
-function updateVisualization() {
-    const canvas = document.getElementById("beamCanvas");
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const belka_x_start = 50, belka_x_end = 350, belka_y = 200;
-    const belka_length_px = belka_x_end - belka_x_start;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(belka_x_start, belka_y);
-    ctx.lineTo(belka_x_end, belka_y);
-    ctx.stroke();
-
-    const L = parseFloat(document.getElementById("L").value) || 0;
-    const q = parseFloat(document.getElementById("q").value) || 0;
-    const P = parseFloat(document.getElementById("P").value) || 0;
-    const a = parseFloat(document.getElementById("a").value) || 0;
-    const tryb = document.querySelector("input[name='tryb']:checked").value;
-
-    if (tryb === "wolna") {
-        ctx.fillStyle = "black";
-        ctx.beginPath();
-        ctx.moveTo(belka_x_start - 10, belka_y + 10);
-        ctx.lineTo(belka_x_start + 10, belka_y + 10);
-        ctx.lineTo(belka_x_start, belka_y);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(belka_x_end - 10, belka_y + 10);
-        ctx.lineTo(belka_x_end + 10, belka_y + 10);
-        ctx.lineTo(belka_x_end, belka_y);
-        ctx.fill();
-    } else {
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(belka_x_start, belka_y - 20);
-        ctx.lineTo(belka_x_start, belka_y + 20);
-        ctx.stroke();
-        ctx.lineWidth = 2;
-        for (let i = -15; i <= 15; i += 10) {
-            ctx.beginPath();
-            ctx.moveTo(belka_x_start - 10, belka_y + i - 5);
-            ctx.lineTo(belka_x_start, belka_y + i + 5);
-            ctx.stroke();
-        }
-    }
-
-    if (q > 0) {
-        const arrowTops = [];
-        for (let i = 0; i < 10; i++) {
-            const x = belka_x_start + (i + 0.5) * belka_length_px / 10;
-            ctx.beginPath();
-            ctx.moveTo(x, belka_y - 30);
-            ctx.lineTo(x, belka_y);
-            ctx.stroke();
-            ctx.lineTo(x - 5, belka_y - 5);
-            ctx.moveTo(x, belka_y);
-            ctx.lineTo(x + 5, belka_y - 5);
-            ctx.stroke();
-            arrowTops.push([x, belka_y - 30]);
-        }
-        ctx.beginPath();
-        for (let i = 0; i < arrowTops.length - 1; i++) {
-            ctx.moveTo(...arrowTops[i]);
-            ctx.lineTo(...arrowTops[i + 1]);
-        }
-        ctx.stroke();
-        ctx.fillText(`${q} kN/m`, belka_x_start + belka_length_px / 2, belka_y - 50);
-    }
-
-    if (P > 0 && L > 0 && a <= L) {
-        const x_pos = belka_x_start + (a / L) * belka_length_px;
-        ctx.beginPath();
-        ctx.moveTo(x_pos, belka_y - 70);
-        ctx.lineTo(x_pos, belka_y);
-        ctx.stroke();
-        ctx.lineTo(x_pos - 5, belka_y - 5);
-        ctx.moveTo(x_pos, belka_y);
-        ctx.lineTo(x_pos + 5, belka_y - 5);
-        ctx.stroke();
-        ctx.fillText(`${P} kN`, x_pos, belka_y - 90);
-    }
-
-    ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30);
-}
-
-async function calculateBeam() {
-    const data = {
-        L: parseFloat(document.getElementById("L").value),
-        q: parseFloat(document.getElementById("q").value),
-        P: parseFloat(document.getElementById("P").value),
-        a: parseFloat(document.getElementById("a").value),
-        E: parseFloat(document.getElementById("E").value),
-        kategoria: document.getElementById("kategoria").value,
-        rozmiar: document.getElementById("rozmiar").value,
-        os: document.querySelector("input[name='os']:checked").value,
-        warunek: document.getElementById("warunek").value,
-        tryb: document.querySelector("input[name='tryb']:checked").value
-    };
+async function calculate() {
+    const L = parseFloat(document.getElementById("L").value);
+    const q = parseFloat(document.getElementById("q").value);
+    const P = parseFloat(document.getElementById("P").value);
+    const a = parseFloat(document.getElementById("a").value);
+    const E = parseFloat(document.getElementById("E").value);
+    const kategoria = document.getElementById("kategoria").value;
+    const rozmiar = document.getElementById("rozmiar").value;
+    const os = document.getElementById("os").value;
+    const warunek = document.getElementById("warunek").value;
+    const tryb = document.getElementById("tryb").value;
 
     const response = await fetch("/ugiecie-belki/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ L, q, P, a, E, kategoria, rozmiar, os, warunek, tryb })
     });
-    const result = await response.json();
+    const data = await response.json();
 
-    document.getElementById("rzeczywiste").innerText = `Rzeczywiste ugięcie: ${Math.round(Math.abs(result.V_max))} mm`;
-    document.getElementById("dopuszczalne").innerText = `Dopuszczalne ugięcie: ${Math.round(result.v_dop)} mm (${data.warunek})`;
-    document.getElementById("moment").innerText = `Maksymalny moment: ${result.M_max.toFixed(2)} kNm`;
-    document.getElementById("wytezenie").innerText = `Wytężenie przekroju: ${result.wytężenie.toFixed(2)}%`;
-
-    Plotly.newPlot("ugieciePlot", [{
-        x: result.x_vals,
-        y: result.v_vals,
-        type: "scatter",
-        mode: "lines",
-        name: "Ugięcie (mm)",
-        line: { color: Math.abs(result.V_max) < result.v_dop ? "green" : "red" }
-    }, {
-        x: result.x_vals,
-        y: Array(result.x_vals.length).fill(-result.v_dop),
-        type: "scatter",
-        mode: "lines",
-        name: `Dop. ugięcie (${data.warunek})`,
-        line: { color: "red", dash: "dash" }
-    }], {
-        title: "Wykres ugięcia",
-        xaxis: { title: "Położenie x [m]" },
-        yaxis: { title: "Ugięcie [mm]" }
+    // Utwórz lub zaktualizuj wykres ugięcia
+    if (ugiecieChart) ugiecieChart.destroy();
+    ugiecieChart = new Chart(document.getElementById("ugiecieChart").getContext("2d"), {
+        type: "line",
+        data: {
+            labels: data.x_vals,
+            datasets: [{
+                label: "Ugięcie [mm]",
+                data: data.v_vals,
+                borderColor: "blue",
+                fill: false
+            }]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: "Długość belki [m]" } },
+                y: { title: { display: true, text: "Ugięcie [mm]" } }
+            },
+            plugins: {
+                annotation: {
+                    annotations: [
+                        // Linia wymiarowa dla długości belki (L)
+                        {
+                            type: "line",
+                            xMin: 0,
+                            xMax: L,
+                            yMin: Math.min(...data.v_vals) - 5,
+                            yMax: Math.min(...data.v_vals) - 5,
+                            borderColor: "black",
+                            borderWidth: 2,
+                            label: {
+                                content: `L = ${L} m`,
+                                enabled: true,
+                                position: "center",
+                                backgroundColor: "rgba(0,0,0,0.7)",
+                                color: "white"
+                            },
+                            arrowHeads: {
+                                start: { enabled: true, fill: true },
+                                end: { enabled: true, fill: true }
+                            }
+                        },
+                        // Linia wymiarowa dla siły P (jeśli P != 0)
+                        ...(P !== 0 ? [{
+                            type: "line",
+                            xMin: a,
+                            xMax: a,
+                            yMin: 0,
+                            yMax: 10,
+                            borderColor: "red",
+                            borderWidth: 2,
+                            label: {
+                                content: `P = ${P} kN`,
+                                enabled: true,
+                                position: "center",
+                                backgroundColor: "rgba(255,0,0,0.7)",
+                                color: "white"
+                            },
+                            arrowHeads: {
+                                end: { enabled: true, fill: true }
+                            }
+                        }] : [])
+                    ]
+                }
+            }
+        }
     });
 
-    Plotly.newPlot("momentPlot", [{
-        x: result.x_vals,
-        y: result.m_vals,
-        type: "scatter",
-        mode: "lines",
-        name: "Moment (kNm)",
-        line: { color: "blue" }
-    }], {
-        title: "Wykres momentów zginających",
-        xaxis: { title: "Położenie x [m]" },
-        yaxis: { title: "Moment [kNm]" }
+    // Utwórz lub zaktualizuj wykres momentu
+    if (momentChart) momentChart.destroy();
+    momentChart = new Chart(document.getElementById("momentChart").getContext("2d"), {
+        type: "line",
+        data: {
+            labels: data.x_vals,
+            datasets: [{
+                label: "Moment [kNm]",
+                data: data.m_vals,
+                borderColor: "red",
+                fill: false
+            }]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: "Długość belki [m]" } },
+                y: { title: { display: true, text: "Moment [kNm]" } }
+            }
+        }
     });
+
+    // Wyświetl wyniki
+    document.getElementById("v-max").textContent = data.V_max.toFixed(2);
+    document.getElementById("v-dop").textContent = data.v_dop.toFixed(2);
+    document.getElementById("m-max").textContent = data.M_max.toFixed(2);
+    document.getElementById("wytrzymalosc").textContent = data.wytężenie.toFixed(2);
+
+    // Najlepszy profil i pierwszy przekroczony
+    const profile = findBestProfile(data.profile, data.wytężenie);
+    document.getElementById("najlepszy").textContent = profile.najlepszy || "-";
+    document.getElementById("przekroczony").textContent = profile.przekroczony || "-";
+}
+
+// Funkcja do znajdowania najlepszego profilu i pierwszego przekroczonego
+function findBestProfile(profile, wytezenie) {
+    const profileEntries = Object.entries(profile);
+    const sortedProfiles = profileEntries.sort((a, b) => {
+        const IyA = a[1].Iy || 0;
+        const IzA = a[1].Iz || 0;
+        const IyB = b[1].Iy || 0;
+        const IzB = b[1].Iz || 0;
+        return (IyA + IzA) - (IyB + IzB); // Sortuj według sumy momentów bezwładności
+    });
+
+    let najlepszy = null;
+    let przekroczony = null;
+
+    for (const [nazwa, dane] of sortedProfiles) {
+        const Iy = dane.Iy || 0;
+        const Iz = dane.Iz || 0;
+        const momentBezwladnosci = Iy + Iz; // Uproszczona metryka
+        if (!przekroczony && wytezenie > 100) {
+            przekroczony = nazwa; // Pierwszy profil, jeśli wytężenie przekracza 100%
+        }
+        if (!najlepszy && wytezenie <= 100) {
+            najlepszy = nazwa; // Pierwszy profil, który spełnia warunek wytężenia
+        }
+    }
+
+    return { najlepszy, przekroczony };
 }
