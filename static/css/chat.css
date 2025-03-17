@@ -12,9 +12,26 @@
     padding: 10px;
     margin-bottom: 10px;
 }
+.chat-box img {
+    max-width: 200px;
+    margin: 5px 0;
+}
 input {
     width: 70%;
     padding: 5px;
+}
+.setup-form {
+    margin-bottom: 20px;
+}
+.setup-form label {
+    display: block;
+    margin: 5px 0;
+}
+.setup-form input[type="text"] {
+    width: 50%;
+}
+.setup-form input[type="color"] {
+    width: 50px;
 }
 button {
     padding: 5px 10px;
@@ -32,4 +49,7 @@ button:hover {
     margin-bottom: 20px;
     color: #007bff;
     text-decoration: none;
+}
+.hidden {
+    display: none;
 }
