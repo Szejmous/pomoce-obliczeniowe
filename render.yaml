@@ -1,14 +1,14 @@
 services:
   - type: web
-    name: pomoce-obliczeniowe
+    name: obliczenia  # Zmień na nową nazwę
     env: python
-    plan: free  # Możesz zmienić na "starter" lub inny płatny plan, jeśli potrzebujesz więcej zasobów
+    plan: free
     buildCommand: "pip install -r requirements.txt"
     startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
-    region: frankfurt  # Możesz zmienić na inny region, np. "frankfurt" dla Europy
-    autoDeploy: true  # Automatyczne wdrożenie przy każdym pushu do repozytorium
+    region: oregon
+    autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11"  # Ustaw wersję Pythona (np. 3.11, możesz zmienić)
+        value: "3.11"
       - key: PORT
-        value: "10000"  # Render przypisuje port dynamicznie, ale możesz ustawić domyślny
+        value: "10000"
