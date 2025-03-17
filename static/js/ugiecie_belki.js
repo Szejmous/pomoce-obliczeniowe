@@ -37,7 +37,6 @@ async function calculate() {
     });
     const data = await response.json();
 
-    // Utwórz lub zaktualizuj wykres ugięcia
     if (ugiecieChart) ugiecieChart.destroy();
     ugiecieChart = new Chart(document.getElementById("ugiecieChart").getContext("2d"), {
         type: "line",
@@ -58,7 +57,6 @@ async function calculate() {
             plugins: {
                 annotation: {
                     annotations: [
-                        // Linia wymiarowa dla długości belki (L)
                         {
                             type: "line",
                             xMin: 0,
@@ -79,7 +77,6 @@ async function calculate() {
                                 end: { enabled: true, fill: true }
                             }
                         },
-                        // Linia wymiarowa dla siły P (jeśli P != 0)
                         ...(P !== 0 ? [{
                             type: "line",
                             xMin: a,
@@ -105,7 +102,6 @@ async function calculate() {
         }
     });
 
-    // Utwórz lub zaktualizuj wykres momentu
     if (momentChart) momentChart.destroy();
     momentChart = new Chart(document.getElementById("momentChart").getContext("2d"), {
         type: "line",
@@ -126,19 +122,16 @@ async function calculate() {
         }
     });
 
-    // Wyświetl wyniki
     document.getElementById("v-max").textContent = data.V_max.toFixed(2);
     document.getElementById("v-dop").textContent = data.v_dop.toFixed(2);
     document.getElementById("m-max").textContent = data.M_max.toFixed(2);
     document.getElementById("wytrzymalosc").textContent = data.wytężenie.toFixed(2);
 
-    // Najlepszy profil i pierwszy przekroczony
     const profile = findBestProfile(data.profile, data.V_max, data.v_dop, os, L, q, P, a, E, tryb);
     document.getElementById("najlepszy").textContent = profile.najlepszy || "-";
     document.getElementById("przekroczony").textContent = profile.przekroczony || "-";
 }
 
-// Funkcja do obliczania ugięcia w punkcie (z backendu)
 function obliczUgiecieWPunkcie(x, L, q, P, a, E, I, tryb) {
     let v_q = 0, v_P = 0;
     if (tryb === "wolna") {
@@ -165,35 +158,29 @@ function obliczUgiecieWPunkcie(x, L, q, P, a, E, I, tryb) {
             }
         }
     }
-    return (v_q + v_P) * 1000; // Przelicz na mm
+    return (v_q + v_P) * 1000;
 }
 
-// Funkcja do znajdowania najlepszego profilu i pierwszego przekroczonego na podstawie ugięcia
 function findBestProfile(profiles, currentVmax, v_dop, os, L, q, P, a, E, tryb) {
     const profileEntries = Object.entries(profiles);
 
-    // Oblicz ugięcie dla każdego profilu
     const profilesWithUgiecie = profileEntries.map(([nazwa, dane]) => {
-        const I = dane[os] * 1e-8; // Moment bezwładności w wybranej osi
-        const x_vals = Array.from({ length: 201 }, (_, i) => (i / 200) * L); // Tak jak w backendzie
+        const I = dane[os] * 1e-8;
+        const x_vals = Array.from({ length: 201 }, (_, i) => (i / 200) * L);
         const v_vals = x_vals.map(x => obliczUgiecieWPunkcie(x, L, q * 1000, P * 1000, a, E * 1e9, I, tryb));
-        const V_max = Math.min(...v_vals); // Maksymalne ugięcie (najmniejsza wartość, bo ugięcie jest ujemne)
+        const V_max = Math.min(...v_vals);
         return { nazwa, V_max };
     });
 
-    // Sortuj profile według ugięcia (od najmniejszego do największego, czyli od największego V_max do najmniejszego)
     profilesWithUgiecie.sort((a, b) => b.V_max - a.V_max);
 
     let najlepszy = null;
     let przekroczony = null;
 
-    // Znajdź najlepszy i przekroczony na podstawie ugięcia
     for (const { nazwa, V_max } of profilesWithUgiecie) {
-        // Najlepszy: pierwszy profil, gdzie |V_max| <= v_dop (ugięcie w mm, więc porównujemy wartości bezwzględne)
         if (!najlepszy && Math.abs(V_max) <= v_dop) {
             najlepszy = nazwa;
         }
-        // Przekroczony: pierwszy profil, gdzie |V_max| > v_dop
         if (!przekroczony && Math.abs(V_max) > v_dop) {
             przekroczony = nazwa;
         }
