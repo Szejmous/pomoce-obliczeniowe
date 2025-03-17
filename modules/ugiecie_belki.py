@@ -47,6 +47,7 @@ async def calculate_beam(data: BeamInput):
     except KeyError:
         raise HTTPException(status_code=400, detail="Nieprawidłowy przekrój")
 
+    # Definicje funkcji PRZED ich użyciem
     def oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I, tryb):
         v_q = v_P = 0
         if tryb == "wolna":
@@ -74,6 +75,7 @@ async def calculate_beam(data: BeamInput):
             M_P = P * (a - x) if P != 0 and x <= a <= L else 0
             return -(M_q + M_P) / 1000
 
+    # Teraz użycie funkcji
     x_vals = np.linspace(0, L, 201).tolist()
     v_vals = [oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I, data.tryb) * 1000 for x in x_vals]
     m_vals = [oblicz_moment_w_punkcie(x, L, q, P, a, data.tryb) for x in x_vals]
@@ -85,7 +87,7 @@ async def calculate_beam(data: BeamInput):
     W = I / (dim / 2)
     M_dop = sigma_dop * 1e6 * W / 1e3
     sigma_max = M_max * 1e3 / W / 1e6
-    wytezenie = (sigma_max / sigma_dop) * 100
+    wytężenie = (sigma_max / sigma_dop) * 100
 
     return {
         "v_vals": v_vals,
@@ -94,6 +96,6 @@ async def calculate_beam(data: BeamInput):
         "V_max": V_max,
         "M_max": M_max,
         "v_dop": v_dop,
-        "wytężenie": wytezenie,
-        "profile": {k: v for k, v in przekroje[data.kategoria].items()}  # Upewniamy się, że profile są zwracane
+        "wytężenie": wytężenie,
+        "profile": {k: v for k, v in przekroje[data.kategoria].items()}
     }
