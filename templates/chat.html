@@ -14,6 +14,12 @@
         <div class="chat-box" id="chat-box"></div>
         <input type="text" id="message" placeholder="Wpisz wiadomość">
         <button onclick="sendMessage()">Wyślij</button>
+        <p>Naciśnij Ctrl+V, aby wkleić obraz ze schowka</p>
     </div>
+    <script>
+        // Pobierz nazwę użytkownika na podstawie komputera lub użyj domyślnej
+        const clientName = "{{ request.client.host }}" === "127.0.0.1" ? "LocalUser" : "User_" + Math.random().toString(36).substr(2, 5);
+        initializeWebSocket(clientName);
+    </script>
 </body>
 </html>
