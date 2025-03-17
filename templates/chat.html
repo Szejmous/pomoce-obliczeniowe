@@ -5,22 +5,25 @@
     <title>Chat</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/chat.css">
-    <script src="/static/js/chat.js"></script>
+    <script src="/static/js/chat.js" defer></script>
 </head>
 <body>
     <div class="container">
         <h1>Chat</h1>
         <a href="/" class="back-btn">Powrót do menu</a>
-        <label for="username">Twoja nazwa:</label>
-        <input type="text" id="username" value="User_{{ request.client.host }}" readonly>
-        <div class="chat-box" id="chat-box"></div>
-        <input type="text" id="message" placeholder="Wpisz wiadomość">
-        <button onclick="sendMessage()">Wyślij</button>
-        <p>Naciśnij Ctrl+V, aby wkleić obraz ze schowka</p>
+        <div id="setup" class="setup-form">
+            <label for="username">Podaj swoją nazwę:</label>
+            <input type="text" id="username" placeholder="Twoja nazwa">
+            <label for="color">Wybierz kolor wiadomości:</label>
+            <input type="color" id="color" value="#000000">
+            <button onclick="startChat()">Dołącz do chatu</button>
+        </div>
+        <div id="chat-container" class="hidden">
+            <div class="chat-box" id="chat-box"></div>
+            <input type="text" id="message" placeholder="Wpisz wiadomość">
+            <button onclick="sendMessage()">Wyślij</button>
+            <p>Naciśnij Ctrl+V, aby wkleić obraz ze schowka</p>
+        </div>
     </div>
-    <script>
-        const clientName = document.getElementById("username").value;
-        initializeWebSocket(clientName);
-    </script>
 </body>
 </html>
