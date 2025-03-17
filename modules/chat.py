@@ -16,12 +16,13 @@ async def chat(request: Request):
 @router.websocket("/ws")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
+    client_ip = websocket.client.host  # Pobierz IP klienta
     active_connections.append(websocket)
     try:
         # Odbierz pierwszą wiadomość z identyfikacją użytkownika
         data = await websocket.receive_text()
         client_data = json.loads(data)
-        client_name = client_data.get("user", "Anonim")
+        client_name = client_data.get("user", f"User_{client_ip}")  # Domyślnie "User_IP" jeśli brak nazwy
 
         # Powiadom o dołączeniu użytkownika
         join_message = {"user": "System", "message": f"{client_name} dołączył do chatu"}
