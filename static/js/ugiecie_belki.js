@@ -1,3 +1,4 @@
+// Funkcja aktualizująca listę rozmiarów profili po wybraniu kategorii
 function updateRozmiary() {
     const kategoria = document.getElementById("kategoria").value;
     const rozmiarSelect = document.getElementById("rozmiar");
@@ -13,6 +14,7 @@ function updateRozmiary() {
     calculateBeam(); // Automatyczne obliczenia po zmianie kategorii
 }
 
+// Funkcja aktualizująca wizualizację belki na canvasie
 function updateVisualization() {
     const canvas = document.getElementById("beamCanvas");
     const ctx = canvas.getContext("2d");
@@ -184,6 +186,7 @@ function updateVisualization() {
     }
 }
 
+// Główna funkcja obliczająca ugięcie i inne parametry
 async function calculateBeam() {
     const data = {
         L: parseFloat(document.getElementById("L").value) || 0,
@@ -224,87 +227,9 @@ async function calculateBeam() {
         document.getElementById("wytezenie").innerText = `Wytężenie przekroju: ${wytezenie}%`;
         document.getElementById("wytezenie").style.color = nosnoscPrzekroczona ? "red" : "green";
 
-        // Wyszukiwanie najlepszego profilu i pierwszego przekroczonego
-        if (przekroje && przekroje[data.kategoria]) {
-            // Funkcja obliczająca ugięcie w punkcie (poprawiona dla wspornika)
-            const obliczUgiecieWPunkcie = (x, L, q, P, a, E, I, tryb) => {
-                let v_q = 0, v_P = 0;
-                if (tryb === "wolna") {
-                    if (q !== 0) {
-                        v_q = -(q * x * (L**3 - 2 * L * x**2 + x**3)) / (24 * E * I);
-                    }
-                    if (P !== 0 && 0 <= a && a <= L) {
-                        const b = L - a;
-                        if (x <= a) {
-                            v_P = -(P * b * x * (L**2 - b**2 - x**2)) / (6 * E * I * L);
-                        } else {
-                            v_P = -(P * a * (L - x) * (L**2 - a**2 - (L - x)**2)) / (6 * E * I * L);
-                        }
-                    }
-                } else { // wspornik
-                    if (q !== 0) {
-                        v_q = -(q * x**2 * (6 * L**2 - 4 * L * x + x**2)) / (24 * E * I);
-                    }
-                    if (P !== 0 && 0 <= a && a <= L) {
-                        if (x <= a) {
-                            v_P = -(P * a**2 * (3 * x / a - (x / a)**2)) / (6 * E * I);
-                        } else if (x <= L) {
-                            v_P = -(P * a**2 * (3 - 2 * x / a)) / (6 * E * I);
-                        }
-                    }
-                }
-                return (v_q + v_P) * 1000; // Przelicz na mm
-            };
-
-            // Funkcja obliczająca maksymalne ugięcie dla danego profilu
-            const calculateUgiecie = (I, L, q, P, a, E, tryb) => {
-                q = q * 1000; // Przelicz na N/m
-                P = P * 1000; // Przelicz na N
-                E = E * 1e9; // Przelicz na Pa
-                I = I * 1e-8; // Przelicz na m^4
-
-                // Generowanie punktów x (analogicznie do np.linspace(0, L, 201))
-                const numPoints = 201;
-                const x_vals = Array.from({ length: numPoints }, (_, i) => (i / (numPoints - 1)) * L);
-                const v_vals = x_vals.map(x => obliczUgiecieWPunkcie(x, L, q, P, a, E, I, tryb));
-                const v_min = Math.min(...v_vals);
-                return Math.abs(v_min); // Zwracamy wartość bezwzględną
-            };
-
-            // Lista profili z obliczeniem ugięcia dla każdego
-            const profiles = Object.entries(przekroje[data.kategoria]).map(([name, props]) => {
-                const I = props[data.os === "Iy" ? "Iy" : "Iz"] || 0;
-                const ugiecie = calculateUgiecie(I, data.L, data.q, data.P, data.a, data.E, data.tryb);
-                return { name, ugiecie };
-            });
-
-            // Sortowanie profili według ugięcia
-            profiles.sort((a, b) => a.ugiecie - b.ugiecie);
-
-            let najlepszyProfil = null;
-            let pierwszyPrzekroczony = null;
-            const v_dop_mm = dopuszczalne;
-
-            // Znajdź najlepszy profil (wykorzystanie w zakresie 0.1–1.0)
-            for (let profile of profiles) {
-                const wykorzystanie = profile.ugiecie / v_dop_mm;
-                if (wykorzystanie >= 0.1 && wykorzystanie <= 1.0) {
-                    if (!najlepszyProfil || wykorzystanie > (profiles.find(p => p.name === najlepszyProfil).ugiecie / v_dop_mm)) {
-                        najlepszyProfil = profile.name;
-                    }
-                }
-                if (wykorzystanie > 1.0 && !pierwszyPrzekroczony) {
-                    pierwszyPrzekroczony = profile.name;
-                }
-            }
-
-            // Wyświetl wyniki
-            document.getElementById("optymalny").innerText = `Najlepszy profil: ${najlepszyProfil || '-'}`;
-            document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: ${pierwszyPrzekroczony || '-'}`;
-        } else {
-            document.getElementById("optymalny").innerText = `Najlepszy profil: -`;
-            document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: -`;
-        }
+        // Wyświetlanie najlepszego profilu i pierwszego przekroczonego
+        document.getElementById("optymalny").innerText = `Najlepszy profil: ${result.najlepszy_profil}`;
+        document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: ${result.pierwszy_przekroczony}`;
 
         // Wykresy
         Plotly.newPlot("ugieciePlot", [{
