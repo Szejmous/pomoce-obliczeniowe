@@ -20,7 +20,7 @@ function updateVisualization() {
 
     // Pobranie rzeczywistej szerokości canvasu i obliczenie skali dla osi x
     const canvasWidth = canvas.width;
-    const baseWidth = 400; // Oryginalna szerokość
+    const baseWidth = 600; // Nowa bazowa szerokość (zwiększona o 1,5 z 400px)
     const xScale = canvasWidth / baseWidth;
 
     const belka_x_start = 50 * xScale;
