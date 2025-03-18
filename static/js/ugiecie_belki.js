@@ -247,10 +247,9 @@ async function calculateBeam() {
                     }
                     if (P !== 0 && 0 <= a && a <= L) {
                         if (x <= a) {
-                            v_P = -(P * a**2 * (3 * x - a)) / (6 * E * I);
+                            v_P = -(P * a**2 * (3 * x / a - (x / a)**2)) / (6 * E * I);
                         } else if (x <= L) {
-                            // Poprawiony wzór dla x > a
-                            v_P = -(P * (x - a)**3) / (6 * E * I) - (P * a * x * (L - a)) / (2 * E * I);
+                            v_P = -(P * a**2 * (3 - 2 * x / a)) / (6 * E * I);
                         }
                     }
                 }
@@ -277,25 +276,26 @@ async function calculateBeam() {
                 const I = props[data.os === "Iy" ? "Iy" : "Iz"] || 0;
                 const ugiecie = calculateUgiecie(I, data.L, data.q, data.P, data.a, data.E, data.tryb);
                 return { name, ugiecie };
-            }).sort((a, b) => a.ugiecie - b.ugiecie); // Sortowanie od najmniejszego ugięcia
+            });
+
+            // Sortowanie profili według ugięcia
+            profiles.sort((a, b) => a.ugiecie - b.ugiecie);
 
             let najlepszyProfil = null;
             let pierwszyPrzekroczony = null;
+            const v_dop_mm = dopuszczalne;
 
-            // Znajdź najlepszy profil (pierwszy, którego ugięcie jest mniejsze lub równe dopuszczalnemu)
+            // Znajdź najlepszy profil (wykorzystanie w zakresie 0.1–1.0)
             for (let profile of profiles) {
-                if (Math.round(profile.ugiecie) <= dopuszczalne) {
-                    najlepszyProfil = profile.name;
-                    break;
+                const wykorzystanie = profile.ugiecie / v_dop_mm;
+                if (wykorzystanie >= 0.1 && wykorzystanie <= 1.0) {
+                    if (!najlepszyProfil || wykorzystanie > (profiles.find(p => p.name === najlepszyProfil).ugiecie / v_dop_mm)) {
+                        najlepszyProfil = profile.name;
+                    }
                 }
-                if (!pierwszyPrzekroczony && Math.round(profile.ugiecie) > dopuszczalne) {
+                if (wykorzystanie > 1.0 && !pierwszyPrzekroczony) {
                     pierwszyPrzekroczony = profile.name;
                 }
-            }
-
-            // Jeśli nie znaleziono lepszego profilu, weź ostatni (największy)
-            if (!najlepszyProfil && profiles.length > 0) {
-                najlepszyProfil = profiles[profiles.length - 1].name;
             }
 
             // Wyświetl wyniki
