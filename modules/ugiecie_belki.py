@@ -57,12 +57,15 @@ async def calculate_beam(data: BeamInput):
                 b = L - a
                 v_P = -(P * b * x * (L**2 - b**2 - x**2)) / (6 * E * I * L) if x <= a else \
                       -(P * a * (L - x) * (L**2 - a**2 - (L - x)**2)) / (6 * E * I * L)
-        else:
+        else:  # wspornik
             if q != 0:
                 v_q = -(q * x**2 * (6 * L**2 - 4 * L * x + x**2)) / (24 * E * I)
             if P != 0 and 0 <= a <= L:
-                v_P = -(P * a**2 * (3 * x - a)) / (6 * E * I) if x <= a else \
-                      -(P * x**2 * (3 * a - x)) / (6 * E * I)
+                if x <= a:
+                    v_P = -(P * a**2 * (3 * x - a)) / (6 * E * I)
+                else:
+                    # Poprawiony wzór dla x > a
+                    v_P = -(P * (x - a)**3) / (6 * E * I) - (P * a * x * (L - a)) / (2 * E * I)
         return v_q + v_P
 
     def oblicz_moment_w_punkcie(x, L, q, P, a, tryb):
