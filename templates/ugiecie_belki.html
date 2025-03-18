@@ -14,33 +14,33 @@
         <a href="/" class="back-btn">Powrót do menu</a>
         <div class="content">
             <div class="input-section">
-                <label><input type="radio" name="tryb" value="wolna" checked onclick="updateVisualization()"> Belka swobodnie podparta</label>
-                <label><input type="radio" name="tryb" value="wspornik" onclick="updateVisualization()"> Wspornik</label>
+                <label><input type="radio" name="tryb" value="wolna" checked> Belka swobodnie podparta</label>
+                <label><input type="radio" name="tryb" value="wspornik"> Wspornik</label>
                 
                 <label>Długość belki L [m]:</label>
-                <input type="number" id="L" value="2" oninput="updateVisualization()">
+                <input type="number" id="L" value="2">
                 
                 <label>Obciążenie równomierne q [kN/m]:</label>
-                <input type="number" id="q" value="5" oninput="updateVisualization()">
+                <input type="number" id="q" value="5">
                 
                 <label>Siła skupiona P [kN]:</label>
-                <input type="number" id="P" value="100" oninput="updateVisualization()">
+                <input type="number" id="P" value="100">
                 
                 <label>Położenie siły a [m]:</label>
-                <input type="number" id="a" value="0.5" oninput="updateVisualization()">
+                <input type="number" id="a" value="0.5">
                 
                 <label>Moduł Younga E [GPa]:</label>
                 <input type="number" id="E" value="210">
                 
                 <label>Kategoria przekroju:</label>
-                <select id="kategoria" onchange="updateRozmiary()">
+                <select id="kategoria">
                     {% for kategoria in kategorie %}
                         <option value="{{ kategoria }}" {% if kategoria == "IPE" %}selected{% endif %}>{{ kategoria }}</option>
                     {% endfor %}
                 </select>
                 
                 <label>Rozmiar przekroju:</label>
-                <select id="rozmiar" onchange="updateVisualization()"></select>
+                <select id="rozmiar"></select>
                 
                 <label>Oś ugięcia:</label>
                 <label><input type="radio" name="os" value="Iy" checked> Oś Y (Iy)</label>
@@ -52,8 +52,6 @@
                         <option value="{{ warunek }}" {% if warunek == "L/250" %}selected{% endif %}>{{ warunek }}</option>
                     {% endfor %}
                 </select>
-                
-                <button onclick="calculateBeam()">Oblicz ugięcie</button>
                 
                 <div id="results">
                     <p id="rzeczywiste">Rzeczywiste ugięcie: -</p>
@@ -73,10 +71,6 @@
     </div>
     <script>
         const przekroje = {{ przekroje | tojson }};
-        window.onload = () => {
-            updateRozmiary();
-            updateVisualization();
-        };
     </script>
 </body>
 </html>
