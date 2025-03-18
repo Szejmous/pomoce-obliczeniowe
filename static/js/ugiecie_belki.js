@@ -19,7 +19,7 @@ function updateVisualization() {
 
     const belka_x_start = 50, belka_x_end = 350, belka_y = 200;
     const belka_length_px = belka_x_end - belka_x_start;
-    ctx.lineWidth = 3; // Zmiana z 4 na 3
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(belka_x_start, belka_y);
     ctx.lineTo(belka_x_end, belka_y);
@@ -43,24 +43,69 @@ function updateVisualization() {
         ctx.lineTo(belka_x_end + 10, belka_y + 10);
         ctx.lineTo(belka_x_end, belka_y);
         ctx.fill();
+
+        // Reakcje podporowe dla belki swobodnie podpartej
+        if (L > 0) {
+            const Va = q * L / 2 + (P > 0 ? P * (L - a) / L : 0);
+            const Vb = q * L / 2 + (P > 0 ? P * a / L : 0);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(belka_x_start, belka_y + 40);
+            ctx.lineTo(belka_x_start, belka_y);
+            ctx.stroke();
+            ctx.lineTo(belka_x_start - 5, belka_y + 5);
+            ctx.moveTo(belka_x_start, belka_y);
+            ctx.lineTo(belka_x_start + 5, belka_y + 5);
+            ctx.stroke();
+            ctx.font = "10px Arial";
+            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 60);
+
+            ctx.beginPath();
+            ctx.moveTo(belka_x_end, belka_y + 40);
+            ctx.lineTo(belka_x_end, belka_y);
+            ctx.stroke();
+            ctx.lineTo(belka_x_end - 5, belka_y + 5);
+            ctx.moveTo(belka_x_end, belka_y);
+            ctx.lineTo(belka_x_end + 5, belka_y + 5);
+            ctx.stroke();
+            ctx.fillText(`Vb=${Vb.toFixed(2)} kN`, belka_x_end, belka_y + 60);
+        }
     } else {
-        ctx.lineWidth = 3; // Ujednolicenie na 3 (było 3, ale dla spójności)
+        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(belka_x_start, belka_y - 20);
         ctx.lineTo(belka_x_start, belka_y + 20);
         ctx.stroke();
-        ctx.lineWidth = 3; // Zmiana z 2 na 3
+        ctx.lineWidth = 3;
         for (let i = -15; i <= 15; i += 10) {
             ctx.beginPath();
             ctx.moveTo(belka_x_start - 10, belka_y + i - 5);
             ctx.lineTo(belka_x_start, belka_y + i + 5);
             ctx.stroke();
         }
+
+        // Reakcja i moment dla wspornika
+        if (L > 0) {
+            const Va = q * L + P;
+            const Ma = q * L * L / 2 + P * a;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(belka_x_start, belka_y + 40);
+            ctx.lineTo(belka_x_start, belka_y);
+            ctx.stroke();
+            ctx.lineTo(belka_x_start - 5, belka_y + 5);
+            ctx.moveTo(belka_x_start, belka_y);
+            ctx.lineTo(belka_x_start + 5, belka_y + 5);
+            ctx.stroke();
+            ctx.font = "10px Arial";
+            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 60);
+            ctx.fillText(`Ma=${Ma.toFixed(2)} kNm`, belka_x_start + 40, belka_y + 40);
+        }
     }
 
     if (q > 0) {
         const arrowTops = [];
-        ctx.lineWidth = 2; // Strzałki na 2
+        ctx.lineWidth = 2;
         for (let i = 0; i < 10; i++) {
             const x = belka_x_start + (i + 0.5) * belka_length_px / 10;
             ctx.beginPath();
@@ -79,13 +124,13 @@ function updateVisualization() {
             ctx.lineTo(...arrowTops[i + 1]);
         }
         ctx.stroke();
-        ctx.font = "10px Arial"; // Ujednolicenie czcionki
+        ctx.font = "10px Arial";
         ctx.fillText(`${q} kN/m`, belka_x_start + belka_length_px / 2, belka_y - 50);
     }
 
     if (P > 0 && L > 0 && a <= L) {
         const x_pos = belka_x_start + (a / L) * belka_length_px;
-        ctx.lineWidth = 2; // Strzałki na 2
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x_pos, belka_y - 70);
         ctx.lineTo(x_pos, belka_y);
@@ -94,12 +139,67 @@ function updateVisualization() {
         ctx.moveTo(x_pos, belka_y);
         ctx.lineTo(x_pos + 5, belka_y - 5);
         ctx.stroke();
-        ctx.font = "10px Arial"; // Ujednolicenie czcionki
+        ctx.font = "10px Arial";
         ctx.fillText(`${P} kN`, x_pos, belka_y - 90);
     }
 
-    ctx.font = "10px Arial"; // Ujednolicenie czcionki
+    ctx.font = "10px Arial";
     ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30);
+
+    // Linie wymiarowe
+    const dim_y1 = belka_y + 90;
+    const dim_y2 = belka_y + 120;
+
+    function rysujZnak(x, y, kierunek) {
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        if (kierunek === "lewo") {
+            ctx.moveTo(x, y - 5);
+            ctx.lineTo(x + 10, y + 5);
+        } else {
+            ctx.moveTo(x - 10, y - 5);
+            ctx.lineTo(x, y + 5);
+        }
+        ctx.stroke();
+    }
+
+    ctx.lineWidth = 1;
+    if (P > 0 && L > 0 && a <= L) {
+        const x_pos = belka_x_start + (a / L) * belka_length_px;
+        ctx.beginPath();
+        ctx.moveTo(belka_x_start, dim_y1);
+        ctx.lineTo(x_pos, dim_y1);
+        ctx.stroke();
+        rysujZnak(belka_x_start, dim_y1, "lewo");
+        rysujZnak(x_pos, dim_y1, "prawo");
+        ctx.font = "10px Arial";
+        ctx.fillText(`${a.toFixed(2)} m`, (belka_x_start + x_pos) / 2, dim_y1 - 10);
+
+        ctx.beginPath();
+        ctx.moveTo(x_pos, dim_y1);
+        ctx.lineTo(belka_x_end, dim_y1);
+        ctx.stroke();
+        rysujZnak(x_pos, dim_y1, "lewo");
+        rysujZnak(belka_x_end, dim_y1, "prawo");
+        ctx.fillText(`${(L - a).toFixed(2)} m`, (x_pos + belka_x_end) / 2, dim_y1 - 10);
+
+        ctx.beginPath();
+        ctx.moveTo(belka_x_start, dim_y2);
+        ctx.lineTo(belka_x_end, dim_y2);
+        ctx.stroke();
+        rysujZnak(belka_x_start, dim_y2, "lewo");
+        rysujZnak(belka_x_end, dim_y2, "prawo");
+        ctx.fillText(`L = ${L.toFixed(2)} m`, belka_x_start + belka_length_px / 2, dim_y2 + 15);
+    } else {
+        ctx.beginPath();
+        ctx.moveTo(belka_x_start, dim_y2);
+        ctx.lineTo(belka_x_end, dim_y2);
+        ctx.stroke();
+        rysujZnak(belka_x_start, dim_y2, "lewo");
+        rysujZnak(belka_x_end, dim_y2, "prawo");
+        ctx.font = "10px Arial";
+        ctx.fillText(`L = ${L.toFixed(2)} m`, belka_x_start + belka_length_px / 2, dim_y2 + 15);
+    }
 }
 
 async function calculateBeam() {
