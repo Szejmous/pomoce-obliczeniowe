@@ -44,30 +44,12 @@ function updateVisualization() {
         ctx.lineTo(belka_x_end, belka_y);
         ctx.fill();
 
-        // Reakcje podporowe dla belki swobodnie podpartej
+        // Reakcje podporowe dla belki swobodnie podpartej - tylko podpisy
         if (L > 0) {
             const Va = q * L / 2 + (P > 0 ? P * (L - a) / L : 0);
             const Vb = q * L / 2 + (P > 0 ? P * a / L : 0);
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(belka_x_start, belka_y + 40);
-            ctx.lineTo(belka_x_start, belka_y);
-            ctx.stroke();
-            ctx.lineTo(belka_x_start - 5, belka_y + 5);
-            ctx.moveTo(belka_x_start, belka_y);
-            ctx.lineTo(belka_x_start + 5, belka_y + 5);
-            ctx.stroke();
             ctx.font = "10px Arial";
             ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 60);
-
-            ctx.beginPath();
-            ctx.moveTo(belka_x_end, belka_y + 40);
-            ctx.lineTo(belka_x_end, belka_y);
-            ctx.stroke();
-            ctx.lineTo(belka_x_end - 5, belka_y + 5);
-            ctx.moveTo(belka_x_end, belka_y);
-            ctx.lineTo(belka_x_end + 5, belka_y + 5);
-            ctx.stroke();
             ctx.fillText(`Vb=${Vb.toFixed(2)} kN`, belka_x_end, belka_y + 60);
         }
     } else {
@@ -84,19 +66,10 @@ function updateVisualization() {
             ctx.stroke();
         }
 
-        // Reakcja i moment dla wspornika
+        // Reakcja i moment dla wspornika - tylko podpisy
         if (L > 0) {
             const Va = q * L + P;
             const Ma = q * L * L / 2 + P * a;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(belka_x_start, belka_y + 40);
-            ctx.lineTo(belka_x_start, belka_y);
-            ctx.stroke();
-            ctx.lineTo(belka_x_start - 5, belka_y + 5);
-            ctx.moveTo(belka_x_start, belka_y);
-            ctx.lineTo(belka_x_start + 5, belka_y + 5);
-            ctx.stroke();
             ctx.font = "10px Arial";
             ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 60);
             ctx.fillText(`Ma=${Ma.toFixed(2)} kNm`, belka_x_start + 40, belka_y + 40);
