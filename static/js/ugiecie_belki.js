@@ -17,8 +17,7 @@ function updateVisualization() {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Zwiększamy szerokość kanwy do 800px i dostosowujemy położenie
-    const belka_x_start = 50, belka_x_end = 750, belka_y = 200;
+    const belka_x_start = 50, belka_x_end = 600, belka_y = 200;
     const belka_length_px = belka_x_end - belka_x_start;
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -98,10 +97,10 @@ function updateVisualization() {
     ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30);
 
     // Linie wymiarowe pod kanwą
-    const dimensionY1 = belka_y + 50; // Pierwsza linia wymiarowa (tylko linia)
-    const dimensionY2 = belka_y + 70; // Druga linia wymiarowa (z opisami)
+    const dimensionY1 = belka_y + 50; // Pierwsza linia wymiarowa
+    const dimensionY2 = belka_y + 70; // Druga linia wymiarowa
 
-    // Linia wymiarowa dla całkowitej długości belki (bez tekstu na górnej linii)
+    // Linia wymiarowa dla całkowitej długości belki (bez opisu na tej linii)
     ctx.beginPath();
     ctx.moveTo(belka_x_start, dimensionY1);
     ctx.lineTo(belka_x_end, dimensionY1);
