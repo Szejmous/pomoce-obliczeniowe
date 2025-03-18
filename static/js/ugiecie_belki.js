@@ -214,15 +214,100 @@ async function calculateBeam() {
         const ugieciePrzekroczone = rzeczywiste > dopuszczalne;
         const nosnoscPrzekroczona = wytezenie > 100;
 
+        // Wyświetlanie wyników z kolorowaniem
         document.getElementById("rzeczywiste").innerText = `Rzeczywiste ugięcie: ${rzeczywiste} mm`;
         document.getElementById("rzeczywiste").style.color = ugieciePrzekroczone ? "red" : "green";
         document.getElementById("dopuszczalne").innerText = `Dopuszczalne ugięcie: ${dopuszczalne} mm (${data.warunek})`;
         document.getElementById("dopuszczalne").style.color = ugieciePrzekroczone ? "red" : "green";
         document.getElementById("moment").innerText = `Maksymalny moment: ${moment} kNm`;
-        document.getElementById("moment").style.color = "black"; // Moment bez kolorowania
+        document.getElementById("moment").style.color = nosnoscPrzekroczona ? "red" : "green"; // Kolorowanie momentu na podstawie wytężenia
         document.getElementById("wytezenie").innerText = `Wytężenie przekroju: ${wytezenie}%`;
         document.getElementById("wytezenie").style.color = nosnoscPrzekroczona ? "red" : "green";
 
+        // Wyszukiwanie najlepszego profilu i pierwszego przekroczonego
+        if (przekroje && przekroje[data.kategoria]) {
+            // Funkcja obliczająca ugięcie w punkcie (przepisana z Pythona)
+            const obliczUgiecieWPunkcie = (x, L, q, P, a, E, I, tryb) => {
+                let v_q = 0, v_P = 0;
+                if (tryb === "wolna") {
+                    if (q !== 0) {
+                        v_q = -(q * x * (L**3 - 2 * L * x**2 + x**3)) / (24 * E * I);
+                    }
+                    if (P !== 0 && 0 <= a && a <= L) {
+                        const b = L - a;
+                        if (x <= a) {
+                            v_P = -(P * b * x * (L**2 - b**2 - x**2)) / (6 * E * I * L);
+                        } else {
+                            v_P = -(P * a * (L - x) * (L**2 - a**2 - (L - x)**2)) / (6 * E * I * L);
+                        }
+                    }
+                } else {
+                    if (q !== 0) {
+                        v_q = -(q * x**2 * (6 * L**2 - 4 * L * x + x**2)) / (24 * E * I);
+                    }
+                    if (P !== 0 && 0 <= a && a <= L) {
+                        if (x <= a) {
+                            v_P = -(P * a**2 * (3 * x - a)) / (6 * E * I);
+                        } else {
+                            v_P = -(P * x**2 * (3 * a - x)) / (6 * E * I);
+                        }
+                    }
+                }
+                return v_q + v_P;
+            };
+
+            // Funkcja obliczająca maksymalne ugięcie dla danego profilu
+            const calculateUgiecie = (I, L, q, P, a, E, tryb) => {
+                q = q * 1000; // Przelicz na N/m
+                P = P * 1000; // Przelicz na N
+                E = E * 1e9; // Przelicz na Pa
+                I = I * 1e-8; // Przelicz na m^4
+
+                // Generowanie punktów x (analogicznie do np.linspace(0, L, 201))
+                const numPoints = 201;
+                const x_vals = Array.from({ length: numPoints }, (_, i) => (i / (numPoints - 1)) * L);
+                const v_vals = x_vals.map(x => obliczUgiecieWPunkcie(x, L, q, P, a, E, I, tryb) * 1000); // Przelicz na mm
+
+                // Znajdź minimalne ugięcie (największe odchylenie w dół, czyli najbardziej ujemne)
+                const v_min = Math.min(...v_vals);
+                return Math.abs(v_min); // Zwracamy wartość bezwzględną
+            };
+
+            // Lista profili z obliczeniem ugięcia dla każdego
+            const profiles = Object.entries(przekroje[data.kategoria]).map(([name, props]) => {
+                const I = props[data.os === "Iy" ? "Iy" : "Iz"] || 0;
+                const ugiecie = calculateUgiecie(I, data.L, data.q, data.P, data.a, data.E, data.tryb);
+                return { name, ugiecie };
+            }).sort((a, b) => a.ugiecie - b.ugiecie); // Sortowanie od najmniejszego ugięcia
+
+            let najlepszyProfil = null;
+            let pierwszyPrzekroczony = null;
+
+            // Znajdź najlepszy profil (pierwszy, którego ugięcie jest mniejsze lub równe dopuszczalnemu)
+            for (let profile of profiles) {
+                if (Math.round(profile.ugiecie) <= dopuszczalne) {
+                    najlepszyProfil = profile.name;
+                    break;
+                }
+                if (!pierwszyPrzekroczony && Math.round(profile.ugiecie) > dopuszczalne) {
+                    pierwszyPrzekroczony = profile.name;
+                }
+            }
+
+            // Jeśli nie znaleziono lepszego profilu, weź ostatni (największy)
+            if (!najlepszyProfil && profiles.length > 0) {
+                najlepszyProfil = profiles[profiles.length - 1].name;
+            }
+
+            // Wyświetl wyniki
+            document.getElementById("optymalny").innerText = `Najlepszy profil: ${najlepszyProfil || '-'}`;
+            document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: ${pierwszyPrzekroczony || '-'}`;
+        } else {
+            document.getElementById("optymalny").innerText = `Najlepszy profil: -`;
+            document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: -`;
+        }
+
+        // Wykresy
         Plotly.newPlot("ugieciePlot", [{
             x: result.x_vals,
             y: result.v_vals,
@@ -257,6 +342,8 @@ async function calculateBeam() {
         });
     } catch (error) {
         console.error("Błąd obliczeń:", error);
+        document.getElementById("optymalny").innerText = `Najlepszy profil: -`;
+        document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: -`;
     }
 }
 
