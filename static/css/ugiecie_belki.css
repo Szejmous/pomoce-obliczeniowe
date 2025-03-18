@@ -9,32 +9,24 @@
 .content {
     display: flex;
     gap: 20px;
-    flex-wrap: wrap; /* Dodajemy możliwość zawijania na mniejszych ekranach */
 }
 .input-section {
-    flex: 0 0 40%; /* Zachowujemy 40% dla inputów, ale dodajemy responsywność */
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-width: 300px; /* Minimalna szerokość dla inputów */
 }
 canvas {
     border: 1px solid #ccc;
-    width: 800px; /* Dopasowana szerokość kanwy */
-    height: 400px;
-    flex: 0 0 800px; /* Ustalona szerokość kanwy */
-    max-width: 100%; /* Responsywność na mniejszych ekranach */
 }
 .plots {
     display: flex;
     gap: 20px;
     margin-top: 20px;
-    width: 100%; /* Wykresy zajmują pełną szerokość */
 }
 #ugieciePlot, #momentPlot {
     width: 50%;
     height: 400px;
-    max-width: 100%; /* Responsywność */
 }
 .back-btn {
     display: inline-block;
@@ -52,27 +44,4 @@ button {
 }
 button:hover {
     background-color: #0056b3;
-}
-
-/* Media query dla mniejszych ekranów */
-@media (max-width: 1000px) {
-    .content {
-        flex-direction: column;
-    }
-    .input-section {
-        flex: 0 0 100%;
-        min-width: 0;
-    }
-    canvas {
-        width: 100%;
-        height: 300px; /* Zmniejszamy wysokość na mniejszych ekranach */
-        flex: 0 0 100%;
-    }
-    .plots {
-        flex-direction: column;
-    }
-    #ugieciePlot, #momentPlot {
-        width: 100%;
-        height: 300px;
-    }
 }
