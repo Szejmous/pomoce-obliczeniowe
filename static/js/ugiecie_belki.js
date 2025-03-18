@@ -18,17 +18,17 @@ function updateVisualization() {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Pobranie rzeczywistej szerokości canvasu i obliczenie skali
+    // Pobranie rzeczywistej szerokości canvasu i obliczenie skali dla osi x
     const canvasWidth = canvas.width;
     const baseWidth = 400; // Oryginalna szerokość
-    const scale = canvasWidth / baseWidth;
+    const xScale = canvasWidth / baseWidth;
 
-    const belka_x_start = 50 * scale;
-    const belka_x_end = 350 * scale;
-    const belka_y = 200 * scale;
+    const belka_x_start = 50 * xScale;
+    const belka_x_end = 350 * xScale;
+    const belka_y = 200; // Stała wysokość, bez skalowania w pionie
     const belka_length_px = belka_x_end - belka_x_start;
 
-    ctx.lineWidth = 3 * scale;
+    ctx.lineWidth = 3 * xScale;
     ctx.beginPath();
     ctx.moveTo(belka_x_start, belka_y);
     ctx.lineTo(belka_x_end, belka_y);
@@ -43,13 +43,13 @@ function updateVisualization() {
     if (tryb === "wolna") {
         ctx.fillStyle = "black";
         ctx.beginPath();
-        ctx.moveTo(belka_x_start - 10 * scale, belka_y + 10 * scale);
-        ctx.lineTo(belka_x_start + 10 * scale, belka_y + 10 * scale);
+        ctx.moveTo(belka_x_start - 10 * xScale, belka_y + 10);
+        ctx.lineTo(belka_x_start + 10 * xScale, belka_y + 10);
         ctx.lineTo(belka_x_start, belka_y);
         ctx.fill();
         ctx.beginPath();
-        ctx.moveTo(belka_x_end - 10 * scale, belka_y + 10 * scale);
-        ctx.lineTo(belka_x_end + 10 * scale, belka_y + 10 * scale);
+        ctx.moveTo(belka_x_end - 10 * xScale, belka_y + 10);
+        ctx.lineTo(belka_x_end + 10 * xScale, belka_y + 10);
         ctx.lineTo(belka_x_end, belka_y);
         ctx.fill();
 
@@ -57,21 +57,21 @@ function updateVisualization() {
         if (L > 0) {
             const Va = q * L / 2 + (P > 0 ? P * (L - a) / L : 0);
             const Vb = q * L / 2 + (P > 0 ? P * a / L : 0);
-            ctx.font = `${10 * scale}px Arial`;
-            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 30 * scale); // Skalowane
-            ctx.fillText(`Vb=${Vb.toFixed(2)} kN`, belka_x_end, belka_y + 30 * scale);   // Skalowane
+            ctx.font = "10px Arial"; // Czcionka bez skalowania w pionie
+            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 30);
+            ctx.fillText(`Vb=${Vb.toFixed(2)} kN`, belka_x_end, belka_y + 30);
         }
     } else {
-        ctx.lineWidth = 3 * scale;
+        ctx.lineWidth = 3 * xScale;
         ctx.beginPath();
-        ctx.moveTo(belka_x_start, belka_y - 20 * scale);
-        ctx.lineTo(belka_x_start, belka_y + 20 * scale);
+        ctx.moveTo(belka_x_start, belka_y - 20);
+        ctx.lineTo(belka_x_start, belka_y + 20);
         ctx.stroke();
-        ctx.lineWidth = 3 * scale;
+        ctx.lineWidth = 3 * xScale;
         for (let i = -15; i <= 15; i += 10) {
             ctx.beginPath();
-            ctx.moveTo(belka_x_start - 10 * scale, belka_y + i * scale - 5 * scale);
-            ctx.lineTo(belka_x_start, belka_y + i * scale + 5 * scale);
+            ctx.moveTo(belka_x_start - 10 * xScale, belka_y + i - 5);
+            ctx.lineTo(belka_x_start, belka_y + i + 5);
             ctx.stroke();
         }
 
@@ -79,26 +79,26 @@ function updateVisualization() {
         if (L > 0) {
             const Va = q * L + P;
             const Ma = q * L * L / 2 + P * a;
-            ctx.font = `${10 * scale}px Arial`;
-            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 30 * scale);      // Skalowane
-            ctx.fillText(`Ma=${Ma.toFixed(2)} kNm`, belka_x_start + 40 * scale, belka_y + 10 * scale); // Skalowane
+            ctx.font = "10px Arial"; // Czcionka bez skalowania w pionie
+            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 30);
+            ctx.fillText(`Ma=${Ma.toFixed(2)} kNm`, belka_x_start + 40 * xScale, belka_y + 10);
         }
     }
 
     if (q > 0) {
         const arrowTops = [];
-        ctx.lineWidth = 2 * scale;
+        ctx.lineWidth = 2 * xScale;
         for (let i = 0; i < 10; i++) {
             const x = belka_x_start + (i + 0.5) * belka_length_px / 10;
             ctx.beginPath();
-            ctx.moveTo(x, belka_y - 30 * scale);
+            ctx.moveTo(x, belka_y - 30);
             ctx.lineTo(x, belka_y);
             ctx.stroke();
-            ctx.lineTo(x - 5 * scale, belka_y - 5 * scale);
+            ctx.lineTo(x - 5 * xScale, belka_y - 5);
             ctx.moveTo(x, belka_y);
-            ctx.lineTo(x + 5 * scale, belka_y - 5 * scale);
+            ctx.lineTo(x + 5 * xScale, belka_y - 5);
             ctx.stroke();
-            arrowTops.push([x, belka_y - 30 * scale]);
+            arrowTops.push([x, belka_y - 30]);
         }
         ctx.beginPath();
         for (let i = 0; i < arrowTops.length - 1; i++) {
@@ -106,46 +106,46 @@ function updateVisualization() {
             ctx.lineTo(...arrowTops[i + 1]);
         }
         ctx.stroke();
-        ctx.font = `${10 * scale}px Arial`;
-        ctx.fillText(`${q} kN/m`, belka_x_start + belka_length_px / 2, belka_y - 50 * scale);
+        ctx.font = "10px Arial"; // Czcionka bez skalowania w pionie
+        ctx.fillText(`${q} kN/m`, belka_x_start + belka_length_px / 2, belka_y - 50);
     }
 
     if (P > 0 && L > 0 && a <= L) {
         const x_pos = belka_x_start + (a / L) * belka_length_px;
-        ctx.lineWidth = 2 * scale;
+        ctx.lineWidth = 2 * xScale;
         ctx.beginPath();
-        ctx.moveTo(x_pos, belka_y - 70 * scale);
+        ctx.moveTo(x_pos, belka_y - 70);
         ctx.lineTo(x_pos, belka_y);
         ctx.stroke();
-        ctx.lineTo(x_pos - 5 * scale, belka_y - 5 * scale);
+        ctx.lineTo(x_pos - 5 * xScale, belka_y - 5);
         ctx.moveTo(x_pos, belka_y);
-        ctx.lineTo(x_pos + 5 * scale, belka_y - 5 * scale);
+        ctx.lineTo(x_pos + 5 * xScale, belka_y - 5);
         ctx.stroke();
-        ctx.font = `${10 * scale}px Arial`;
-        ctx.fillText(`${P} kN`, x_pos, belka_y - 90 * scale);
+        ctx.font = "10px Arial"; // Czcionka bez skalowania w pionie
+        ctx.fillText(`${P} kN`, x_pos, belka_y - 90);
     }
 
-    ctx.font = `${10 * scale}px Arial`;
-    ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30 * scale);
+    ctx.font = "10px Arial"; // Czcionka bez skalowania w pionie
+    ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30);
 
     // Linie wymiarowe
-    const dim_y1 = belka_y + 90 * scale;
-    const dim_y2 = belka_y + 120 * scale;
+    const dim_y1 = belka_y + 90;
+    const dim_y2 = belka_y + 120;
 
     function rysujZnak(x, y, kierunek) {
-        ctx.lineWidth = 2 * scale;
+        ctx.lineWidth = 2 * xScale;
         ctx.beginPath();
         if (kierunek === "lewo") {
-            ctx.moveTo(x, y - 5 * scale);
-            ctx.lineTo(x + 10 * scale, y + 5 * scale);
+            ctx.moveTo(x, y - 5);
+            ctx.lineTo(x + 10 * xScale, y + 5);
         } else {
-            ctx.moveTo(x - 10 * scale, y - 5 * scale);
-            ctx.lineTo(x, y + 5 * scale);
+            ctx.moveTo(x - 10 * xScale, y - 5);
+            ctx.lineTo(x, y + 5);
         }
         ctx.stroke();
     }
 
-    ctx.lineWidth = 1 * scale;
+    ctx.lineWidth = 1 * xScale;
     if (P > 0 && L > 0 && a <= L) {
         const x_pos = belka_x_start + (a / L) * belka_length_px;
         ctx.beginPath();
@@ -154,8 +154,8 @@ function updateVisualization() {
         ctx.stroke();
         rysujZnak(belka_x_start, dim_y1, "lewo");
         rysujZnak(x_pos, dim_y1, "prawo");
-        ctx.font = `${10 * scale}px Arial`;
-        ctx.fillText(`${a.toFixed(2)} m`, (belka_x_start + x_pos) / 2, dim_y1 - 10 * scale);
+        ctx.font = "10px Arial"; // Czcionka bez skalowania w pionie
+        ctx.fillText(`${a.toFixed(2)} m`, (belka_x_start + x_pos) / 2, dim_y1 - 10);
 
         ctx.beginPath();
         ctx.moveTo(x_pos, dim_y1);
@@ -163,7 +163,7 @@ function updateVisualization() {
         ctx.stroke();
         rysujZnak(x_pos, dim_y1, "lewo");
         rysujZnak(belka_x_end, dim_y1, "prawo");
-        ctx.fillText(`${(L - a).toFixed(2)} m`, (x_pos + belka_x_end) / 2, dim_y1 - 10 * scale);
+        ctx.fillText(`${(L - a).toFixed(2)} m`, (x_pos + belka_x_end) / 2, dim_y1 - 10);
 
         ctx.beginPath();
         ctx.moveTo(belka_x_start, dim_y2);
@@ -171,7 +171,7 @@ function updateVisualization() {
         ctx.stroke();
         rysujZnak(belka_x_start, dim_y2, "lewo");
         rysujZnak(belka_x_end, dim_y2, "prawo");
-        ctx.fillText(`L = ${L.toFixed(2)} m`, belka_x_start + belka_length_px / 2, dim_y2 + 15 * scale);
+        ctx.fillText(`L = ${L.toFixed(2)} m`, belka_x_start + belka_length_px / 2, dim_y2 + 15);
     } else {
         ctx.beginPath();
         ctx.moveTo(belka_x_start, dim_y2);
@@ -179,8 +179,8 @@ function updateVisualization() {
         ctx.stroke();
         rysujZnak(belka_x_start, dim_y2, "lewo");
         rysujZnak(belka_x_end, dim_y2, "prawo");
-        ctx.font = `${10 * scale}px Arial`;
-        ctx.fillText(`L = ${L.toFixed(2)} m`, belka_x_start + belka_length_px / 2, dim_y2 + 15 * scale);
+        ctx.font = "10px Arial"; // Czcionka bez skalowania w pionie
+        ctx.fillText(`L = ${L.toFixed(2)} m`, belka_x_start + belka_length_px / 2, dim_y2 + 15);
     }
 }
 
