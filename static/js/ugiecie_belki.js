@@ -226,7 +226,7 @@ async function calculateBeam() {
 
         // Wyszukiwanie najlepszego profilu i pierwszego przekroczonego
         if (przekroje && przekroje[data.kategoria]) {
-            // Funkcja obliczająca ugięcie w punkcie (przepisana z Pythona)
+            // Funkcja obliczająca ugięcie w punkcie (poprawiona dla wspornika)
             const obliczUgiecieWPunkcie = (x, L, q, P, a, E, I, tryb) => {
                 let v_q = 0, v_P = 0;
                 if (tryb === "wolna") {
@@ -241,19 +241,20 @@ async function calculateBeam() {
                             v_P = -(P * a * (L - x) * (L**2 - a**2 - (L - x)**2)) / (6 * E * I * L);
                         }
                     }
-                } else {
+                } else { // wspornik
                     if (q !== 0) {
                         v_q = -(q * x**2 * (6 * L**2 - 4 * L * x + x**2)) / (24 * E * I);
                     }
                     if (P !== 0 && 0 <= a && a <= L) {
                         if (x <= a) {
                             v_P = -(P * a**2 * (3 * x - a)) / (6 * E * I);
-                        } else {
-                            v_P = -(P * x**2 * (3 * a - x)) / (6 * E * I);
+                        } else if (x <= L) {
+                            // Poprawiony wzór dla x > a
+                            v_P = -(P * (x - a)**3) / (6 * E * I) - (P * a * x * (L - a)) / (2 * E * I);
                         }
                     }
                 }
-                return v_q + v_P;
+                return (v_q + v_P) * 1000; // Przelicz na mm
             };
 
             // Funkcja obliczająca maksymalne ugięcie dla danego profilu
@@ -266,9 +267,7 @@ async function calculateBeam() {
                 // Generowanie punktów x (analogicznie do np.linspace(0, L, 201))
                 const numPoints = 201;
                 const x_vals = Array.from({ length: numPoints }, (_, i) => (i / (numPoints - 1)) * L);
-                const v_vals = x_vals.map(x => obliczUgiecieWPunkcie(x, L, q, P, a, E, I, tryb) * 1000); // Przelicz na mm
-
-                // Znajdź minimalne ugięcie (największe odchylenie w dół, czyli najbardziej ujemne)
+                const v_vals = x_vals.map(x => obliczUgiecieWPunkcie(x, L, q, P, a, E, I, tryb));
                 const v_min = Math.min(...v_vals);
                 return Math.abs(v_min); // Zwracamy wartość bezwzględną
             };
