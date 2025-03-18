@@ -16,8 +16,10 @@
     flex-direction: column;
     gap: 10px;
 }
-canvas {
+#beamCanvas {
     border: 1px solid #ccc;
+    max-width: 50%; /* Maksymalna szerokość 50% kontenera content */
+    height: 400px; /* Stała wysokość */
 }
 .plots {
     display: flex;
