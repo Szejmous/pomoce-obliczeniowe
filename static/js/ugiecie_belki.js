@@ -17,8 +17,8 @@ function updateVisualization() {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Zwiększamy szerokość kanwy i dostosowujemy położenie
-    const belka_x_start = 50, belka_x_end = 600, belka_y = 200;
+    // Zwiększamy szerokość kanwy do 800px i dostosowujemy położenie
+    const belka_x_start = 50, belka_x_end = 750, belka_y = 200;
     const belka_length_px = belka_x_end - belka_x_start;
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -98,15 +98,14 @@ function updateVisualization() {
     ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30);
 
     // Linie wymiarowe pod kanwą
-    const dimensionY1 = belka_y + 50; // Pierwsza linia wymiarowa
-    const dimensionY2 = belka_y + 70; // Druga linia wymiarowa
+    const dimensionY1 = belka_y + 50; // Pierwsza linia wymiarowa (tylko linia)
+    const dimensionY2 = belka_y + 70; // Druga linia wymiarowa (z opisami)
 
-    // Linia wymiarowa dla całkowitej długości belki
+    // Linia wymiarowa dla całkowitej długości belki (bez tekstu na górnej linii)
     ctx.beginPath();
     ctx.moveTo(belka_x_start, dimensionY1);
     ctx.lineTo(belka_x_end, dimensionY1);
     ctx.stroke();
-    ctx.fillText(`${L.toFixed(1)} m`, (belka_x_start + belka_x_end) / 2, dimensionY1 + 20);
 
     // Linia wymiarowa dla pozycji siły P
     if (P > 0 && L > 0 && a <= L) {
