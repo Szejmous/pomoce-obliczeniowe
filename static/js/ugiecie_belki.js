@@ -10,6 +10,7 @@ function updateRozmiary() {
         rozmiarSelect.appendChild(option);
     });
     updateVisualization();
+    calculateBeam(); // Automatyczne obliczenia po zmianie kategorii
 }
 
 function updateVisualization() {
@@ -44,13 +45,13 @@ function updateVisualization() {
         ctx.lineTo(belka_x_end, belka_y);
         ctx.fill();
 
-        // Reakcje podporowe dla belki swobodnie podpartej - tylko podpisy
+        // Reakcje podporowe dla belki swobodnie podpartej - tylko podpisy, podniesione
         if (L > 0) {
             const Va = q * L / 2 + (P > 0 ? P * (L - a) / L : 0);
             const Vb = q * L / 2 + (P > 0 ? P * a / L : 0);
             ctx.font = "10px Arial";
-            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 60);
-            ctx.fillText(`Vb=${Vb.toFixed(2)} kN`, belka_x_end, belka_y + 60);
+            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 30); // Podniesione z 60 na 30
+            ctx.fillText(`Vb=${Vb.toFixed(2)} kN`, belka_x_end, belka_y + 30);   // Podniesione z 60 na 30
         }
     } else {
         ctx.lineWidth = 3;
@@ -66,13 +67,13 @@ function updateVisualization() {
             ctx.stroke();
         }
 
-        // Reakcja i moment dla wspornika - tylko podpisy
+        // Reakcja i moment dla wspornika - tylko podpisy, podniesione
         if (L > 0) {
             const Va = q * L + P;
             const Ma = q * L * L / 2 + P * a;
             ctx.font = "10px Arial";
-            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 60);
-            ctx.fillText(`Ma=${Ma.toFixed(2)} kNm`, belka_x_start + 40, belka_y + 40);
+            ctx.fillText(`Va=${Va.toFixed(2)} kN`, belka_x_start, belka_y + 30);      // Podniesione z 60 na 30
+            ctx.fillText(`Ma=${Ma.toFixed(2)} kNm`, belka_x_start + 40, belka_y + 10); // Podniesione z 40 na 10
         }
     }
 
@@ -177,11 +178,11 @@ function updateVisualization() {
 
 async function calculateBeam() {
     const data = {
-        L: parseFloat(document.getElementById("L").value),
-        q: parseFloat(document.getElementById("q").value),
-        P: parseFloat(document.getElementById("P").value),
-        a: parseFloat(document.getElementById("a").value),
-        E: parseFloat(document.getElementById("E").value),
+        L: parseFloat(document.getElementById("L").value) || 0,
+        q: parseFloat(document.getElementById("q").value) || 0,
+        P: parseFloat(document.getElementById("P").value) || 0,
+        a: parseFloat(document.getElementById("a").value) || 0,
+        E: parseFloat(document.getElementById("E").value) || 0,
         kategoria: document.getElementById("kategoria").value,
         rozmiar: document.getElementById("rozmiar").value,
         os: document.querySelector("input[name='os']:checked").value,
@@ -189,48 +190,97 @@ async function calculateBeam() {
         tryb: document.querySelector("input[name='tryb']:checked").value
     };
 
-    const response = await fetch("/ugiecie-belki/calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    });
-    const result = await response.json();
+    try {
+        const response = await fetch("/ugiecie-belki/calculate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
 
-    document.getElementById("rzeczywiste").innerText = `Rzeczywiste ugięcie: ${Math.round(Math.abs(result.V_max))} mm`;
-    document.getElementById("dopuszczalne").innerText = `Dopuszczalne ugięcie: ${Math.round(result.v_dop)} mm (${data.warunek})`;
-    document.getElementById("moment").innerText = `Maksymalny moment: ${result.M_max.toFixed(2)} kNm`;
-    document.getElementById("wytezenie").innerText = `Wytężenie przekroju: ${result.wytężenie.toFixed(2)}%`;
+        const rzeczywiste = Math.round(Math.abs(result.V_max));
+        const dopuszczalne = Math.round(result.v_dop);
+        const wytezenie = result.wytężenie.toFixed(2);
+        const moment = result.M_max.toFixed(2);
 
-    Plotly.newPlot("ugieciePlot", [{
-        x: result.x_vals,
-        y: result.v_vals,
-        type: "scatter",
-        mode: "lines",
-        name: "Ugięcie (mm)",
-        line: { color: Math.abs(result.V_max) < result.v_dop ? "green" : "red" }
-    }, {
-        x: result.x_vals,
-        y: Array(result.x_vals.length).fill(-result.v_dop),
-        type: "scatter",
-        mode: "lines",
-        name: `Dop. ugięcie (${data.warunek})`,
-        line: { color: "red", dash: "dash" }
-    }], {
-        title: "Wykres ugięcia",
-        xaxis: { title: "Położenie x [m]" },
-        yaxis: { title: "Ugięcie [mm]" }
-    });
+        const ugieciePrzekroczone = rzeczywiste > dopuszczalne;
+        const nosnoscPrzekroczona = wytezenie > 100;
 
-    Plotly.newPlot("momentPlot", [{
-        x: result.x_vals,
-        y: result.m_vals,
-        type: "scatter",
-        mode: "lines",
-        name: "Moment (kNm)",
-        line: { color: "blue" }
-    }], {
-        title: "Wykres momentów zginających",
-        xaxis: { title: "Położenie x [m]" },
-        yaxis: { title: "Moment [kNm]" }
-    });
+        document.getElementById("rzeczywiste").innerText = `Rzeczywiste ugięcie: ${rzeczywiste} mm`;
+        document.getElementById("rzeczywiste").style.color = ugieciePrzekroczone ? "red" : "green";
+        document.getElementById("dopuszczalne").innerText = `Dopuszczalne ugięcie: ${dopuszczalne} mm (${data.warunek})`;
+        document.getElementById("dopuszczalne").style.color = ugieciePrzekroczone ? "red" : "green";
+        document.getElementById("moment").innerText = `Maksymalny moment: ${moment} kNm`;
+        document.getElementById("moment").style.color = "black"; // Moment bez kolorowania
+        document.getElementById("wytezenie").innerText = `Wytężenie przekroju: ${wytezenie}%`;
+        document.getElementById("wytezenie").style.color = nosnoscPrzekroczona ? "red" : "green";
+
+        Plotly.newPlot("ugieciePlot", [{
+            x: result.x_vals,
+            y: result.v_vals,
+            type: "scatter",
+            mode: "lines",
+            name: "Ugięcie (mm)",
+            line: { color: ugieciePrzekroczone ? "red" : "green" }
+        }, {
+            x: result.x_vals,
+            y: Array(result.x_vals.length).fill(-result.v_dop),
+            type: "scatter",
+            mode: "lines",
+            name: `Dop. ugięcie (${data.warunek})`,
+            line: { color: "red", dash: "dash" }
+        }], {
+            title: "Wykres ugięcia",
+            xaxis: { title: "Położenie x [m]" },
+            yaxis: { title: "Ugięcie [mm]" }
+        });
+
+        Plotly.newPlot("momentPlot", [{
+            x: result.x_vals,
+            y: result.m_vals,
+            type: "scatter",
+            mode: "lines",
+            name: "Moment (kNm)",
+            line: { color: "blue" }
+        }], {
+            title: "Wykres momentów zginających",
+            xaxis: { title: "Położenie x [m]" },
+            yaxis: { title: "Moment [kNm]" }
+        });
+    } catch (error) {
+        console.error("Błąd obliczeń:", error);
+    }
 }
+
+// Inicjalizacja i dodanie zdarzeń
+window.onload = () => {
+    updateRozmiary();
+    updateVisualization();
+    calculateBeam();
+
+    // Dodanie zdarzeń oninput dla wszystkich pól
+    ["L", "q", "P", "a", "E"].forEach(id => {
+        document.getElementById(id).addEventListener("input", () => {
+            updateVisualization();
+            calculateBeam();
+        });
+    });
+    document.getElementById("kategoria").addEventListener("change", () => {
+        updateRozmiary();
+        calculateBeam();
+    });
+    document.getElementById("rozmiar").addEventListener("change", () => {
+        updateVisualization();
+        calculateBeam();
+    });
+    document.getElementById("warunek").addEventListener("change", calculateBeam);
+    document.querySelectorAll("input[name='tryb']").forEach(input => {
+        input.addEventListener("change", () => {
+            updateVisualization();
+            calculateBeam();
+        });
+    });
+    document.querySelectorAll("input[name='os']").forEach(input => {
+        input.addEventListener("change", calculateBeam);
+    });
+};
