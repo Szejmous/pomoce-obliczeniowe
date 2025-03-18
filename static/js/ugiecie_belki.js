@@ -17,7 +17,7 @@ function updateVisualization() {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const belka_x_start = 50, belka_x_end = 600, belka_y = 200;
+    const belka_x_start = 50, belka_x_end = 350, belka_y = 200;
     const belka_length_px = belka_x_end - belka_x_start;
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -95,29 +95,6 @@ function updateVisualization() {
     }
 
     ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30);
-
-    // Linie wymiarowe pod kanwą
-    const dimensionY1 = belka_y + 50; // Pierwsza linia wymiarowa
-    const dimensionY2 = belka_y + 70; // Druga linia wymiarowa
-
-    // Linia wymiarowa dla całkowitej długości belki (bez opisu na tej linii)
-    ctx.beginPath();
-    ctx.moveTo(belka_x_start, dimensionY1);
-    ctx.lineTo(belka_x_end, dimensionY1);
-    ctx.stroke();
-
-    // Linia wymiarowa dla pozycji siły P
-    if (P > 0 && L > 0 && a <= L) {
-        const a_pos = belka_x_start + (a / L) * belka_length_px;
-        const remaining = L - a;
-        ctx.beginPath();
-        ctx.moveTo(belka_x_start, dimensionY2);
-        ctx.lineTo(belka_x_end, dimensionY2);
-        ctx.stroke();
-        ctx.fillText(`${a.toFixed(1)} m`, belka_x_start + (a_pos - belka_x_start) / 2, dimensionY2 + 20);
-        ctx.fillText(`${remaining.toFixed(1)} m`, a_pos + (belka_x_end - a_pos) / 2, dimensionY2 + 20);
-        ctx.fillText(`${L.toFixed(1)} m`, (belka_x_start + belka_x_end) / 2, dimensionY2 + 40);
-    }
 }
 
 async function calculateBeam() {
