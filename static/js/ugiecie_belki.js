@@ -19,7 +19,7 @@ function updateVisualization() {
 
     const belka_x_start = 50, belka_x_end = 350, belka_y = 200;
     const belka_length_px = belka_x_end - belka_x_start;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3; // Zmiana z 4 na 3
     ctx.beginPath();
     ctx.moveTo(belka_x_start, belka_y);
     ctx.lineTo(belka_x_end, belka_y);
@@ -44,12 +44,12 @@ function updateVisualization() {
         ctx.lineTo(belka_x_end, belka_y);
         ctx.fill();
     } else {
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3; // Ujednolicenie na 3 (było 3, ale dla spójności)
         ctx.beginPath();
         ctx.moveTo(belka_x_start, belka_y - 20);
         ctx.lineTo(belka_x_start, belka_y + 20);
         ctx.stroke();
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3; // Zmiana z 2 na 3
         for (let i = -15; i <= 15; i += 10) {
             ctx.beginPath();
             ctx.moveTo(belka_x_start - 10, belka_y + i - 5);
@@ -60,6 +60,7 @@ function updateVisualization() {
 
     if (q > 0) {
         const arrowTops = [];
+        ctx.lineWidth = 2; // Strzałki na 2
         for (let i = 0; i < 10; i++) {
             const x = belka_x_start + (i + 0.5) * belka_length_px / 10;
             ctx.beginPath();
@@ -78,11 +79,13 @@ function updateVisualization() {
             ctx.lineTo(...arrowTops[i + 1]);
         }
         ctx.stroke();
+        ctx.font = "10px Arial"; // Ujednolicenie czcionki
         ctx.fillText(`${q} kN/m`, belka_x_start + belka_length_px / 2, belka_y - 50);
     }
 
     if (P > 0 && L > 0 && a <= L) {
         const x_pos = belka_x_start + (a / L) * belka_length_px;
+        ctx.lineWidth = 2; // Strzałki na 2
         ctx.beginPath();
         ctx.moveTo(x_pos, belka_y - 70);
         ctx.lineTo(x_pos, belka_y);
@@ -91,9 +94,11 @@ function updateVisualization() {
         ctx.moveTo(x_pos, belka_y);
         ctx.lineTo(x_pos + 5, belka_y - 5);
         ctx.stroke();
+        ctx.font = "10px Arial"; // Ujednolicenie czcionki
         ctx.fillText(`${P} kN`, x_pos, belka_y - 90);
     }
 
+    ctx.font = "10px Arial"; // Ujednolicenie czcionki
     ctx.fillText(`${document.getElementById("rozmiar").value}`, belka_x_start + belka_length_px / 2, belka_y + 30);
 }
 
