@@ -16,11 +16,8 @@
     flex-direction: column;
     gap: 10px;
 }
-#beamCanvas {
+canvas {
     border: 1px solid #ccc;
-    width: 50%; /* 50% szerokości kontenera content */
-    height: auto; /* Automatyczna wysokość, proporcjonalna do szerokości */
-    aspect-ratio: 1; /* Zachowanie proporcji 1:1 */
 }
 .plots {
     display: flex;
