@@ -1,4 +1,4 @@
-// Funkcja aktualizująca listę rozmiarów profili po wybraniu kategorii
+// Funkcja aktualizująca listę rozmiaró profili po wybraniu kategorii
 function updateRozmiary() {
     const kategoria = document.getElementById("kategoria").value;
     const rozmiarSelect = document.getElementById("rozmiar");
