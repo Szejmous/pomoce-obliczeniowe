@@ -223,13 +223,13 @@ async function calculateBeam() {
         document.getElementById("dopuszczalne").innerText = `Dopuszczalne ugięcie: ${dopuszczalne} mm (${data.warunek})`;
         document.getElementById("dopuszczalne").style.color = ugieciePrzekroczone ? "red" : "green";
         document.getElementById("moment").innerText = `Maksymalny moment: ${moment} kNm`;
-        document.getElementById("moment").style.color = nosnoscPrzekroczona ? "red" : "green"; // Kolorowanie momentu na podstawie wytężenia
+        document.getElementById("moment").style.color = nosnoscPrzekroczona ? "red" : "green";
         document.getElementById("wytezenie").innerText = `Wytężenie przekroju: ${wytezenie}%`;
         document.getElementById("wytezenie").style.color = nosnoscPrzekroczona ? "red" : "green";
 
         // Wyświetlanie najlepszego profilu i pierwszego przekroczonego
-        document.getElementById("optymalny").innerText = `Najlepszy profil: ${result.najlepszy_profil}`;
-        document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: ${result.pierwszy_przekroczony}`;
+        document.getElementById("optymalny").innerText = `Najlepszy profil: ${result.najlepszy_profil || 'Brak danych'}`;
+        document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: ${result.pierwszy_przekroczony || 'Brak danych'}`;
 
         // Wykresy
         Plotly.newPlot("ugieciePlot", [{
@@ -266,8 +266,8 @@ async function calculateBeam() {
         });
     } catch (error) {
         console.error("Błąd obliczeń:", error);
-        document.getElementById("optymalny").innerText = `Najlepszy profil: -`;
-        document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: -`;
+        document.getElementById("optymalny").innerText = `Najlepszy profil: Błąd`;
+        document.getElementById("przekroczony").innerText = `Pierwszy przekroczony: Błąd`;
     }
 }
 
