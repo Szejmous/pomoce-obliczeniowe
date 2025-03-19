@@ -51,20 +51,26 @@ async def calculate_beam(data: BeamInput):
     def oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I, tryb):
         v_q = v_P = 0
         if tryb == "wolna":
+            # Ugięcie od obciążenia równomiernie rozłożonego q
             if q != 0:
                 v_q = -(q * x * (L**3 - 2 * L * x**2 + x**3)) / (24 * E * I)
+            # Ugięcie od siły skupionej P
             if P != 0 and 0 <= a <= L:
                 b = L - a
-                v_P = -(P * b * x * (L**2 - b**2 - x**2)) / (6 * E * I * L) if x <= a else \
-                      -(P * a * (L - x) * (L**2 - a**2 - (L - x)**2)) / (6 * E * I * L)
-        else:  # wspornik - powrót do wzoru ze skokiem
+                if x <= a:
+                    v_P = -(P * b * x * (L**2 - b**2 - x**2)) / (6 * E * I * L)
+                else:
+                    v_P = -(P * a * (L - x) * (L**2 - a**2 - (L - x)**2)) / (6 * E * I * L)
+        else:  # wspornik
+            # Ugięcie od obciążenia równomiernie rozłożonego q
             if q != 0:
                 v_q = -(q * x**2 * (6 * L**2 - 4 * L * x + x**2)) / (24 * E * I)
+            # Ugięcie od siły skupionej P
             if P != 0 and 0 <= a <= L:
                 if x <= a:
-                    v_P = -(P * a**2 * (3 * x - a)) / (6 * E * I)
-                else:
                     v_P = -(P * x**2 * (3 * a - x)) / (6 * E * I)
+                else:
+                    v_P = -(P * a**2 * (3 * x - a)) / (6 * E * I)
         return v_q + v_P
 
     def oblicz_moment_w_punkcie(x, L, q, P, a, tryb):
@@ -77,8 +83,9 @@ async def calculate_beam(data: BeamInput):
             M_P = P * (a - x) if P != 0 and x <= a <= L else 0
             return -(M_q + M_P) / 1000
 
-    # Obliczenia ugięcia i momentów
-    x_vals = np.linspace(0, L, 201).tolist()
+    # Zwiększenie dokładności: L/100
+    num_points = int(L / 0.01) + 1  # L/100, np. dla L=2 będzie 201 punktów
+    x_vals = np.linspace(0, L, num_points).tolist()
     v_vals = [oblicz_ugiecie_w_punkcie(x, L, q, P, a, E, I, data.tryb) * 1000 for x in x_vals]
     m_vals = [oblicz_moment_w_punkcie(x, L, q, P, a, data.tryb) for x in x_vals]
 
