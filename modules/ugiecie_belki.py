@@ -62,7 +62,7 @@ async def calculate_beam(data: BeamInput):
                 else:
                     v_P = -(P * a * (L - x) * (L**2 - a**2 - (L - x)**2)) / (6 * E * I * L)
         else:  # wspornik
-            # Ugięcie od obciążenia równomiernie rozłożonego q
+            # Ugięcie od obciążeni równomiernie rozłożonego q
             if q != 0:
                 v_q = -(q * x**2 * (6 * L**2 - 4 * L * x + x**2)) / (24 * E * I)
             # Ugięcie od siły skupionej P
