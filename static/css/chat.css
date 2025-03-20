@@ -13,7 +13,8 @@
     margin-bottom: 10px;
 }
 .chat-box img {
-    max-width: 200px;
+    width: 100%; /* Zmieniono z max-width: 200px na pełną szerokość */
+    height: auto; /* Zachowanie proporcji w pionie */
     margin: 5px 0;
 }
 input {
