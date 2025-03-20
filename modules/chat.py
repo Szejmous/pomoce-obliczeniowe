@@ -24,7 +24,8 @@ async def websocket_chat(websocket: WebSocket):
         connection_info = {"websocket": websocket, "name": client_name, "color": client_color}
         active_connections.append(connection_info)
 
-        join_message = {"user": "System", "message": f"{client_name} dołączył do chatu", "color": "#000000"}
+        # Zmiana formatu wiadomości systemowej
+        join_message = {"message": f"{client_name} dołączył do chatu", "color": "#000000"}
         await broadcast(json.dumps(join_message))
 
         while True:
@@ -35,7 +36,8 @@ async def websocket_chat(websocket: WebSocket):
             await broadcast(json.dumps(message_data))
     except WebSocketDisconnect:
         active_connections[:] = [conn for conn in active_connections if conn["websocket"] != websocket]
-        leave_message = {"user": "System", "message": f"{client_name} opuścił chat", "color": "#000000"}
+        # Zmiana formatu wiadomości systemowej
+        leave_message = {"message": f"{client_name} opuścił chat", "color": "#000000"}
         await broadcast(json.dumps(leave_message))
     except Exception as e:
         print(f"Błąd: {e}")
