@@ -34,12 +34,14 @@ function initializeWebSocket(name, color) {
             // Wyświetl obraz
             const img = document.createElement("img");
             img.src = `data:image/png;base64,${data.image}`;
-            img.style.maxWidth = "200px";
             chatBox.appendChild(img);
             chatBox.innerHTML += `<p style="color: ${data.color}">${data.user}: [Obraz]</p>`;
-        } else {
-            // Wyświetl tekst w wybranym kolorze
+        } else if (data.user) {
+            // Wyświetl wiadomość użytkownika w wybranym kolorze
             chatBox.innerHTML += `<p style="color: ${data.color}">${data.user}: ${data.message}</p>`;
+        } else {
+            // Wyświetl komunikat systemowy (bez "System:")
+            chatBox.innerHTML += `<p style="color: ${data.color}">${data.message}</p>`;
         }
         chatBox.scrollTop = chatBox.scrollHeight;
     };
@@ -64,6 +66,14 @@ function sendMessage() {
         document.getElementById("message").value = "";
     }
 }
+
+// Obsługa wysyłania wiadomości klawiszem Enter
+document.getElementById("message").addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault(); // Zapobiega dodaniu nowej linii w polu tekstowym
+        sendMessage();
+    }
+});
 
 // Obsługa wklejania obrazu ze schowka
 document.addEventListener("paste", (event) => {
