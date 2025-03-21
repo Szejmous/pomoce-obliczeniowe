@@ -39,5 +39,6 @@ body {
 .logo {
     display: block;
     margin: 0 auto 20px;
-    max-width: 200px;
+    width: 400px; /* Stała szerokość 400px */
+    height: auto; /* Proporcjonalna wysokość */
 }
