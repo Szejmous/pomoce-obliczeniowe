@@ -12,7 +12,7 @@ active_connections = []
 async def chat(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
 
-@router.websocket("/chat/ws")  # ZMIANA: z "/ws" na "/chat/ws"
+@router.websocket("/chat/ws")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
     try:
@@ -24,6 +24,7 @@ async def websocket_chat(websocket: WebSocket):
         connection_info = {"websocket": websocket, "name": client_name, "color": client_color}
         active_connections.append(connection_info)
 
+        # Zmiana formatu wiadomości systemowej
         join_message = {"message": f"{client_name} dołączył do chatu", "color": "#000000"}
         await broadcast(json.dumps(join_message))
 
@@ -35,8 +36,9 @@ async def websocket_chat(websocket: WebSocket):
             await broadcast(json.dumps(message_data))
     except WebSocketDisconnect:
         active_connections[:] = [conn for conn in active_connections if conn["websocket"] != websocket]
+        # Zmiana formatu wiadomości systemowej
         leave_message = {"message": f"{client_name} opuścił chat", "color": "#000000"}
-        await broadcast(json.dumps(join_message))
+        await broadcast(json.dumps(leave_message))
     except Exception as e:
         print(f"Błąd: {e}")
         active_connections[:] = [conn for conn in active_connections if conn["websocket"] != websocket]
