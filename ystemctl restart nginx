@@ -1,0 +1,30 @@
+[0;1;32m●[0m obliczenia.service - Uvicorn instance for obliczenia app
+     Loaded: loaded (]8;;file://srv763579/etc/systemd/system/obliczenia.service/etc/systemd/system/obliczenia.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Fri 2025-03-21 10:10:17 UTC; 1s ago
+   Main PID: 23072 (uvicorn)
+      Tasks: 6 (limit: 4654)
+     Memory: 43.9M (peak: 44.2M)
+        CPU: 523ms
+     CGroup: /system.slice/obliczenia.service
+             └─[0;38;5;245m23072 /apka/obliczenia/pomoce-obliczeniowe/venv/bin/python3 /apka/obliczenia/pomoce-obliczeniowe/venv/bin/uvicorn main:app --host 0.0.0.0 --port 10000[0m
+
+Mar 21 10:10:17 srv763579 systemd[1]: Started obliczenia.service - Uvicorn instance for obliczenia app.
+Mar 21 10:10:17 srv763579 uvicorn[23072]: INFO:     Started server process [23072]
+Mar 21 10:10:17 srv763579 uvicorn[23072]: INFO:     Waiting for application startup.
+Mar 21 10:10:17 srv763579 uvicorn[23072]: INFO:     Application startup complete.
+Mar 21 10:10:17 srv763579 uvicorn[23072]: INFO:     Uvicorn running on http://0.0.0.0:10000 (Press CTRL+C to quit)
+[0;1;32m●[0m obliczenia.service - Uvicorn instance for obliczenia app
+     Loaded: loaded (]8;;file://srv763579/etc/systemd/system/obliczenia.service/etc/systemd/system/obliczenia.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Fri 2025-03-21 10:12:33 UTC; 4s ago
+   Main PID: 23113 (uvicorn)
+      Tasks: 6 (limit: 4654)
+     Memory: 43.9M (peak: 44.1M)
+        CPU: 462ms
+     CGroup: /system.slice/obliczenia.service
+             └─[0;38;5;245m23113 /apka/obliczenia/pomoce-obliczeniowe/venv/bin/python3 /apka/obliczenia/pomoce-obliczeniowe/venv/bin/uvicorn main:app --host 0.0.0.0 --port 10000[0m
+
+Mar 21 10:12:33 srv763579 systemd[1]: Started obliczenia.service - Uvicorn instance for obliczenia app.
+Mar 21 10:12:34 srv763579 uvicorn[23113]: INFO:     Started server process [23113]
+Mar 21 10:12:34 srv763579 uvicorn[23113]: INFO:     Waiting for application startup.
+Mar 21 10:12:34 srv763579 uvicorn[23113]: INFO:     Application startup complete.
+Mar 21 10:12:34 srv763579 uvicorn[23113]: INFO:     Uvicorn running on http://0.0.0.0:10000 (Press CTRL+C to quit)

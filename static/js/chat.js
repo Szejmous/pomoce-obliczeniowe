@@ -11,6 +11,8 @@ function startChat() {
         return;
     }
 
+    console.log("Rozpoczynanie chatu dla:", clientName, "z kolorem:", clientColor);
+
     // Ukryj formularz i pokaż chat
     document.getElementById("setup").classList.add("hidden");
     document.getElementById("chat-container").classList.remove("hidden");
@@ -20,27 +22,30 @@ function startChat() {
 }
 
 function initializeWebSocket(name, color) {
-    ws = new WebSocket(`wss://${window.location.host}/chat/ws`); // Zmieniono na wss://
+    const wsUrl = `wss://${window.location.host}/chat/ws`;
+    console.log("Inicjalizacja WebSocket z URL:", wsUrl);
+
+    ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-        // Wyślij nazwę i kolor po połączeniu
-        ws.send(JSON.stringify({ user: name, color: color }));
+        console.log("WebSocket otwarty");
+        const initMessage = JSON.stringify({ user: name, color: color });
+        console.log("Wysyłanie danych inicjalnych:", initMessage);
+        ws.send(initMessage);
     };
 
     ws.onmessage = (event) => {
+        console.log("Otrzymano wiadomość:", event.data);
         const data = JSON.parse(event.data);
         const chatBox = document.getElementById("chat-box");
         if (data.image) {
-            // Wyświetl obraz
             const img = document.createElement("img");
             img.src = `data:image/png;base64,${data.image}`;
             chatBox.appendChild(img);
             chatBox.innerHTML += `<p style="color: ${data.color}">${data.user}: [Obraz]</p>`;
         } else if (data.user) {
-            // Wyświetl wiadomość użytkownika w wybranym kolorze
             chatBox.innerHTML += `<p style="color: ${data.color}">${data.user}: ${data.message}</p>`;
         } else {
-            // Wyświetl komunikat systemowy (bez "System:")
             chatBox.innerHTML += `<p style="color: ${data.color}">${data.message}</p>`;
         }
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -50,19 +55,22 @@ function initializeWebSocket(name, color) {
         console.error("Błąd WebSocket:", error);
     };
 
-    ws.onclose = () => {
-        console.log("Połączenie zamknięte");
+    ws.onclose = (event) => {
+        console.log("Połączenie WebSocket zamknięte. Kod:", event.code, "Powód:", event.reason);
     };
 }
 
 function sendMessage() {
-    if (!ws || ws.readyState !== WebSocket.OPEN) { // Zabezpieczenie przed undefined
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
         alert("Połączenie z chatem nie jest aktywne. Spróbuj odświeżyć stronę.");
+        console.warn("Próba wysłania wiadomości bez aktywnego połączenia WebSocket");
         return;
     }
     const msg = document.getElementById("message").value.trim();
     if (msg) {
-        ws.send(JSON.stringify({ message: msg }));
+        const messageData = JSON.stringify({ message: msg });
+        console.log("Wysyłanie wiadomości:", messageData);
+        ws.send(messageData);
         document.getElementById("message").value = "";
     }
 }
@@ -70,15 +78,16 @@ function sendMessage() {
 // Obsługa wysyłania wiadomości klawiszem Enter
 document.getElementById("message").addEventListener("keypress", (event) => {
     if (event.key === "Enter") {
-        event.preventDefault(); // Zapobiega dodaniu nowej linii w polu tekstowym
+        event.preventDefault();
         sendMessage();
     }
 });
 
 // Obsługa wklejania obrazu ze schowka
 document.addEventListener("paste", (event) => {
-    if (!ws || ws.readyState !== WebSocket.OPEN) { // Zabezpieczenie przed undefined
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
         alert("Połączenie z chatem nie jest aktywne. Spróbuj odświeżyć stronę.");
+        console.warn("Próba wklejenia obrazu bez aktywnego połączenia WebSocket");
         return;
     }
     const items = (event.clipboardData || event.originalEvent.clipboardData).items;
@@ -88,7 +97,9 @@ document.addEventListener("paste", (event) => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const base64Image = e.target.result.split(",")[1];
-                ws.send(JSON.stringify({ image: base64Image }));
+                const imageData = JSON.stringify({ image: base64Image });
+                console.log("Wysyłanie obrazu:", imageData.substring(0, 50) + "..."); // Skrócone logowanie
+                ws.send(imageData);
             };
             reader.readAsDataURL(blob);
         }

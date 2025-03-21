@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from modules import ugiecie_belki, worek_sniegu_przeszkoda, worek_sniegu_dach, wspornik, wyboczenie_ramy, chat
@@ -10,6 +10,13 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/")
 async def menu(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+# Testowy endpoint WebSocket
+@app.websocket("/test-ws")
+async def test_websocket(websocket: WebSocket):
+    await websocket.accept()
+    await websocket.send_text("Test WebSocket działa!")
+    await websocket.close()
 
 app.include_router(ugiecie_belki.router, prefix="/ugiecie-belki")
 app.include_router(worek_sniegu_przeszkoda.router, prefix="/worek-sniegu-przeszkoda")
